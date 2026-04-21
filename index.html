@@ -20,6 +20,19 @@
   --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
   --shm:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05);
 }
+[data-theme="dark"]{
+  --bg:#16181f;--bg2:#1e2028;--surface:#22252f;--surface2:#282b36;
+  --border:#323644;--border2:#424760;
+  --ink:#dde1ec;--ink2:#a8aec8;--muted:#6b7290;--muted2:#4a5070;
+  --teal:#34d4bf;--teal-bg:rgba(52,212,191,.10);--teal-bdr:rgba(52,212,191,.28);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,.10);--amber-bdr:rgba(245,166,35,.28);
+  --rose:#f87171;--rose-bg:rgba(248,113,113,.10);--rose-bdr:rgba(248,113,113,.28);
+  --violet:#b197fc;--violet-bg:rgba(177,151,252,.10);--violet-bdr:rgba(177,151,252,.28);
+  --sky:#60c8f5;--sky-bg:rgba(96,200,245,.10);--sky-bdr:rgba(96,200,245,.28);
+  --lime:#86efac;--lime-bg:rgba(134,239,172,.10);--lime-bdr:rgba(134,239,172,.28);
+  --sh:0 1px 4px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.25);
+  --shm:0 4px 20px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.55}
@@ -205,6 +218,73 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
 .et{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:4px}
 .es{font-size:13px;color:var(--muted2)}
 
+/* DARK MODE TOGGLE */
+.dm-toggle{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;border:none;background:none;width:100%;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;margin-bottom:4px}
+.dm-toggle:hover{background:var(--bg2);color:var(--ink)}
+.dm-track{width:34px;height:18px;border-radius:9px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0}
+.dm-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+[data-theme="dark"] .dm-track{background:var(--teal)}
+[data-theme="dark"] .dm-thumb{transform:translateX(16px)}
+
+/* MODAL OVERLAY */
+.modal-bg{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:popIn .25s ease}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:17px;color:var(--ink)}
+.modal-close{width:28px;height:28px;border-radius:var(--rs);border:1.5px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);transition:all .15s}
+.modal-close:hover{background:var(--rose-bg);border-color:var(--rose-bdr);color:var(--rose)}
+
+/* SAVE / VERSIONS */
+.ver-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);margin-bottom:8px;transition:all .15s}
+.ver-item:hover{border-color:var(--border2)}
+.ver-info{flex:1;min-width:0}
+.ver-label{font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ver-meta{font-size:11px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.ver-btns{display:flex;gap:6px;flex-shrink:0}
+.vbtn{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s}
+.vbtn-load{color:var(--teal);border-color:var(--teal-bdr);background:var(--teal-bg)}
+.vbtn-load:hover{background:var(--teal);color:#fff}
+.vbtn-del{color:var(--rose);border-color:var(--rose-bdr);background:var(--rose-bg)}
+.vbtn-del:hover{background:var(--rose);color:#fff}
+.save-name-row{display:flex;gap:8px;margin-bottom:16px}
+.save-name-row input{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .18s}
+.save-name-row input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+.no-vers{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
+
+/* EXPIRY ALERTS */
+.alert-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:var(--rs);margin-bottom:8px;border:1.5px solid}
+.alert-warn{background:var(--amber-bg);border-color:var(--amber-bdr);color:var(--amber)}
+.alert-crit{background:var(--rose-bg);border-color:var(--rose-bdr);color:var(--rose)}
+.alert-txt{font-size:12px;font-weight:600}
+.alert-ico{font-size:16px;flex-shrink:0}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px}
+.dash-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.dash-card.dc-teal::before{background:var(--teal)}
+.dash-card.dc-amber::before{background:var(--amber)}
+.dash-card.dc-rose::before{background:var(--rose)}
+.dash-card.dc-violet::before{background:var(--violet)}
+.dash-card.dc-sky::before{background:var(--sky)}
+.dc-icon{font-size:22px;margin-bottom:8px}
+.dc-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.dc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.lc-table{width:100%;border-collapse:collapse}
+.lc-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1.5px solid var(--border);background:var(--surface2)}
+.lc-table td{padding:9px 12px;border-bottom:1px solid var(--bg2);font-size:12px;vertical-align:middle}
+.lc-table tbody tr:hover td{background:var(--bg2)}
+
+/* EXCEL EXPORT MODAL */
+.col-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.chk-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;background:var(--surface2)}
+.chk-row:hover{border-color:var(--teal);background:var(--teal-bg)}
+.chk-row input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;cursor:pointer}
+.chk-row label{font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.filter-row .field select{font-size:12px}
+
 @media print{.sidebar,.tabs,.btn-row,.new-lc-btn{display:none!important}body{background:#fff}.main{padding:20px;max-width:100%}}
 
 /* ═══ MOBILE HAMBURGER ═══ */
@@ -236,8 +316,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   .dr4{grid-template-columns:1fr 1fr auto;grid-template-rows:auto auto}
   .dr5{grid-template-columns:1fr 1fr auto;grid-template-rows:auto auto}
   .topbar{flex-direction:column;align-items:flex-start;gap:8px}
-  .signature{bottom:70px}
-}
+  .signature{bottom:70px}}
 
 /* ═══ PHONE (≤600px) ═══ */
 @media(max-width:600px){
@@ -265,40 +344,33 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   .sgrid{grid-template-columns:1fr 1fr}
   .sc{padding:10px 12px}
   .sc-v{font-size:15px}
-  .signature{left:12px;bottom:72px}
-  .sig-line1{font-size:11px}
-  .sig-line2{font-size:9px}
   .toast{bottom:auto;top:60px;right:12px;left:12px;font-size:12px}
 }
 
 /* SIGNATURE */
 .signature{
-  position:fixed;
-  bottom:18px;
-  left:22px;
-  z-index:998;
+  padding:8px 18px 14px;
   display:flex;
   flex-direction:column;
-  gap:1px;
-  pointer-events:none;
+  gap:2px;
 }
 .sig-line1{
   font-family:'Playfair Display','Georgia',serif;
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
   font-style:italic;
   color:var(--teal);
   letter-spacing:.3px;
-  opacity:.85;
-  text-shadow:0 1px 4px rgba(13,148,136,.15);
+  opacity:.9;
+  text-shadow:0 1px 4px rgba(13,148,136,.12);
 }
 .sig-line2{
   font-family:'Plus Jakarta Sans',sans-serif;
   font-size:10px;
   font-weight:500;
   color:var(--muted2);
-  letter-spacing:.5px;
-  opacity:.75;
+  letter-spacing:.4px;
+  opacity:.8;
 }
 </style>
 </head>
@@ -322,21 +394,40 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       <div class="brand-mark">LC</div>
       <div><div class="brand-name">LC Manager</div><div class="brand-sub">Lifecycle · Journals</div></div>
     </div>
+    <!-- Signature under brand -->
+    <div class="signature">
+      <span class="sig-line1">Created by Mostafa Salaheldin</span>
+      <span class="sig-line2">with assistance of AI</span>
+    </div>
   </div>
   <div class="nav">
     <div class="nav-group">
       <div class="nav-gl">Workflows</div>
-      <button class="nb on" id="nb-issuance" onclick="showView('issuance')"><span class="ni">🏦</span>New Issuance<span class="nd"></span></button>
-      <button class="nb" id="nb-invoices"  onclick="showView('invoices')"><span class="ni">🧾</span>Invoices<span class="nd" id="d-inv"></span></button>
-      <button class="nb" id="nb-fees"      onclick="showView('fees')"><span class="ni">💳</span>Additional Fees<span class="nd" id="d-fees"></span></button>
-      <button class="nb" id="nb-closing"   onclick="showView('closing')"><span class="ni">🔒</span>Close LC<span class="nd" id="d-cl"></span></button>
-      <button class="nb" id="nb-entries"   onclick="showView('entries')"><span class="ni">📋</span>Journal Entries<span class="nd" id="d-ent"></span></button>
+      <button class="nb on" id="nb-issuance"  onclick="showView('issuance')"><span class="ni">🏦</span>New Issuance<span class="nd"></span></button>
+      <button class="nb" id="nb-invoices"     onclick="showView('invoices')"><span class="ni">🧾</span>Invoices<span class="nd" id="d-inv"></span></button>
+      <button class="nb" id="nb-fees"         onclick="showView('fees')"><span class="ni">💳</span>Additional Fees<span class="nd" id="d-fees"></span></button>
+      <button class="nb" id="nb-closing"      onclick="showView('closing')"><span class="ni">🔒</span>Close LC<span class="nd" id="d-cl"></span></button>
+      <button class="nb" id="nb-entries"      onclick="showView('entries')"><span class="ni">📋</span>Journal Entries<span class="nd" id="d-ent"></span></button>
+      <button class="nb" id="nb-dashboard"    onclick="showView('dashboard')"><span class="ni">📊</span>Dashboard</button>
     </div>
     <hr class="nhr">
     <div class="nav-group">
       <div class="nav-gl">Active LCs</div>
       <div class="lc-list" id="lcList"><div style="padding:5px 7px;font-size:12px;color:var(--muted2)">No LCs yet</div></div>
       <button class="new-lc-btn" onclick="resetIssuance()">＋ New LC</button>
+    </div>
+    <hr class="nhr">
+    <div style="padding:0 10px 6px">
+      <div class="nav-gl" style="margin-bottom:8px">Tools</div>
+      <button class="nb" onclick="openSaveModal()"><span class="ni">💾</span>Save Version<span class="nd" id="d-ver"></span></button>
+      <button class="nb" onclick="openVersionsModal()"><span class="ni">🕒</span>Saved Versions</button>
+      <button class="nb" onclick="openExcelModal()"><span class="ni">📥</span>Export Excel</button>
+      <button class="nb" onclick="resetAll()" style="color:var(--rose)"><span class="ni" style="background:var(--rose-bg)">🗑</span>Reset All Data</button>
+      <button class="dm-toggle" onclick="toggleDark()" id="dmBtn">
+        <span class="ni" style="background:none;border:none">🌙</span>
+        Dark Mode
+        <div class="dm-track" style="margin-left:auto"><div class="dm-thumb"></div></div>
+      </button>
     </div>
   </div>
 </aside>
@@ -385,6 +476,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   </div>
 
   <div class="btn-row">
+    <button class="btn b-ghost" onclick="quickSave('Issuance')">💾 Save</button>
     <button class="btn b-amber" onclick="genIssuance()">⚡ Generate Issuance Journal Entries</button>
   </div>
 </div>
@@ -425,6 +517,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   </div>
 
   <div class="btn-row">
+    <button class="btn b-ghost" onclick="quickSave('Invoices')">💾 Save</button>
     <button class="btn b-violet" onclick="genInvoices()">📎 Generate Invoice Journal Entries</button>
   </div>
 </div>
@@ -460,6 +553,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   </div>
 
   <div class="btn-row">
+    <button class="btn b-ghost" onclick="quickSave('Addl Fees')">💾 Save</button>
     <button class="btn b-sky" onclick="genAddlFees()">💳 Generate Additional Fee Entries</button>
   </div>
 </div>
@@ -519,6 +613,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   </div>
 
   <div class="btn-row">
+    <button class="btn b-ghost" onclick="quickSave('Closing')">💾 Save</button>
     <button class="btn b-ghost" onclick="showView('entries')">View Entries</button>
     <button class="btn b-teal" onclick="genClosing()">🔒 Generate Closing Journal Entries</button>
   </div>
@@ -546,7 +641,116 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   <div id="entriesOut"></div>
 </div>
 
+<!-- ── DASHBOARD ── -->
+<div class="view" id="view-dashboard">
+  <div class="topbar">
+    <div><div class="pt">LC <em>Dashboard</em></div><div class="pd">Overview of all Letters of Credit and expiry alerts</div></div>
+    <span class="pill p-sky">⬤ Dashboard</span>
+  </div>
+  <div id="alertsOut"></div>
+  <div class="dash-grid" id="dashStats"></div>
+  <div class="card">
+    <div class="chd"><span class="cico">📋</span>All LCs Summary</div>
+    <div style="overflow-x:auto">
+      <table class="lc-table" id="dashTable">
+        <thead><tr>
+          <th>LC Number</th><th>Vendor</th><th>Bank</th><th>Project</th>
+          <th>Value</th><th>Margin</th><th>Issuance</th><th>Expiry</th><th>Status</th>
+        </tr></thead>
+        <tbody id="dashTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 </main>
+</div>
+
+<!-- ════ MODALS ════ -->
+<!-- SAVE MODAL -->
+<div class="modal-bg" id="modal-save">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">💾 Save Version</div>
+      <button class="modal-close" onclick="closeModal('modal-save')">×</button>
+    </div>
+    <div class="save-name-row">
+      <input id="saveLabel" placeholder="e.g. After LC-001 Issuance" />
+      <button class="btn b-teal" onclick="doSave()">Save</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted)">A snapshot of all current LCs and journal entries will be saved to your browser.</div>
+  </div>
+</div>
+
+<!-- VERSIONS MODAL -->
+<div class="modal-bg" id="modal-versions">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">🕒 Saved Versions</div>
+      <button class="modal-close" onclick="closeModal('modal-versions')">×</button>
+    </div>
+    <div id="versList"></div>
+  </div>
+</div>
+
+<!-- EXCEL EXPORT MODAL -->
+<div class="modal-bg" id="modal-excel">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">📥 Export to Excel</div>
+      <button class="modal-close" onclick="closeModal('modal-excel')">×</button>
+    </div>
+    <div class="nav-gl" style="margin-bottom:10px">Filters</div>
+    <div class="filter-row">
+      <div class="field"><label>Status</label>
+        <select id="xl_status">
+          <option value="all">All (Open + Closed)</option>
+          <option value="open">Open Only</option>
+          <option value="closed">Closed Only</option>
+        </select>
+      </div>
+      <div class="field"><label>Stage</label>
+        <select id="xl_stage">
+          <option value="all">All Stages</option>
+          <option value="issuance">Issuance</option>
+          <option value="invoice">Invoices</option>
+          <option value="addl">Additional Fees</option>
+          <option value="closing">Closing</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:16px"><label>Project (leave blank = all)</label>
+      <input id="xl_proj" placeholder="e.g. PRJ-2024-001">
+    </div>
+    <div class="nav-gl" style="margin-bottom:10px">LC Data Columns</div>
+    <div class="col-checks">
+      <label class="chk-row"><input type="checkbox" value="lcNo" checked><span>LC Number</span></label>
+      <label class="chk-row"><input type="checkbox" value="proj" checked><span>Project No.</span></label>
+      <label class="chk-row"><input type="checkbox" value="vendor" checked><span>Vendor</span></label>
+      <label class="chk-row"><input type="checkbox" value="bank" checked><span>Bank</span></label>
+      <label class="chk-row"><input type="checkbox" value="lcValue"><span>LC Value</span></label>
+      <label class="chk-row"><input type="checkbox" value="currency"><span>Currency</span></label>
+      <label class="chk-row"><input type="checkbox" value="marginAmt"><span>Cash Margin</span></label>
+      <label class="chk-row"><input type="checkbox" value="issDate"><span>Issuance Date</span></label>
+      <label class="chk-row"><input type="checkbox" value="expDate"><span>Expiry Date</span></label>
+      <label class="chk-row"><input type="checkbox" value="status" checked><span>Status</span></label>
+    </div>
+    <div class="nav-gl" style="margin-top:14px;margin-bottom:10px">Journal Entry Columns</div>
+    <div class="col-checks">
+      <label class="chk-row"><input type="checkbox" value="stage" checked><span>Stage</span></label>
+      <label class="chk-row"><input type="checkbox" value="badge" checked><span>Badge</span></label>
+      <label class="chk-row"><input type="checkbox" value="title" checked><span>Title</span></label>
+      <label class="chk-row"><input type="checkbox" value="date" checked><span>Date</span></label>
+      <label class="chk-row"><input type="checkbox" value="code" checked><span>Account Code</span></label>
+      <label class="chk-row"><input type="checkbox" value="account" checked><span>Account Name</span></label>
+      <label class="chk-row"><input type="checkbox" value="debit" checked><span>Debit (DR)</span></label>
+      <label class="chk-row"><input type="checkbox" value="credit" checked><span>Credit (CR)</span></label>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn b-ghost" onclick="closeModal('modal-excel')">Cancel</button>
+      <button class="btn b-teal" onclick="doExcelExport()">⬇ Export Excel</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"><span id="tIco"></span><span id="tMsg"></span></div>
@@ -560,8 +764,10 @@ function showView(v){
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('on'));
   document.getElementById('view-'+v).classList.add('on');
-  document.getElementById('nb-'+v).classList.add('on');
+  const nb=document.getElementById('nb-'+v);
+  if(nb) nb.classList.add('on');
   if(v==='entries') renderEntries();
+  if(v==='dashboard') renderDashboard();
   if(['invoices','fees','closing'].includes(v)) refreshSelects();
 }
 
@@ -1062,6 +1268,276 @@ function resetIssuance(){
   showView('issuance');
 }
 
+// ═══ RESET ALL ═══════════════════════════════════════
+function resetAll(){
+  if(!confirm('⚠️ This will delete ALL LCs, journal entries, and saved versions.\n\nAre you sure?')) return;
+  S.lcs={};
+  S.entries=[];
+  S.tab='all';
+  localStorage.removeItem(VER_KEY);
+  localStorage.removeItem('lc_theme');
+  markDots();
+  refreshSidebar();
+  refreshSelects();
+  updateVerDot();
+  resetIssuance();
+  toast('All data cleared','🗑');
+}
+
+// ═══ DARK MODE ═══════════════════════════════════════
+function toggleDark(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',isDark?'light':'dark');
+  localStorage.setItem('lc_theme',isDark?'light':'dark');
+}
+(function(){
+  const t=localStorage.getItem('lc_theme')||'light';
+  document.documentElement.setAttribute('data-theme',t);
+})();
+
+// ═══ MODAL ═══════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') document.querySelectorAll('.modal-bg.on').forEach(m=>m.classList.remove('on'));});
+
+// ═══ SAVE / VERSIONS ═════════════════════════════════
+const VER_KEY='lc_versions';
+function getVersions(){try{return JSON.parse(localStorage.getItem(VER_KEY)||'[]');}catch{return[];}}
+function saveVersions(arr){localStorage.setItem(VER_KEY,JSON.stringify(arr));}
+
+function openSaveModal(){
+  document.getElementById('saveLabel').value='';
+  openModal('modal-save');
+  setTimeout(()=>document.getElementById('saveLabel').focus(),100);
+}
+
+function quickSave(context){
+  const now=new Date();
+  const label=`${context} — ${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+  const vers=getVersions();
+  vers.unshift({id:Date.now(),label,date:now.toISOString(),lcs:JSON.parse(JSON.stringify(S.lcs)),entries:JSON.parse(JSON.stringify(S.entries))});
+  if(vers.length>50) vers.pop();
+  saveVersions(vers);
+  updateVerDot();
+  toast(`Saved: ${label}`,'💾');
+}
+
+function doSave(){
+  const label=document.getElementById('saveLabel').value.trim()||'Manual Save';
+  const now=new Date();
+  const vers=getVersions();
+  vers.unshift({id:Date.now(),label,date:now.toISOString(),lcs:JSON.parse(JSON.stringify(S.lcs)),entries:JSON.parse(JSON.stringify(S.entries))});
+  if(vers.length>50) vers.pop();
+  saveVersions(vers);
+  closeModal('modal-save');
+  updateVerDot();
+  toast(`Saved: ${label}`,'💾');
+}
+
+function openVersionsModal(){
+  renderVersionsList();
+  openModal('modal-versions');
+}
+
+function renderVersionsList(){
+  const vers=getVersions();
+  const el=document.getElementById('versList');
+  if(!vers.length){el.innerHTML='<div class="no-vers">No saved versions yet.<br>Use 💾 Save Version to create a snapshot.</div>';return;}
+  el.innerHTML=vers.map(v=>{
+    const d=new Date(v.date);
+    const lcCount=Object.keys(v.lcs||{}).length;
+    const entCount=(v.entries||[]).length;
+    return `<div class="ver-item">
+      <div class="ver-info">
+        <div class="ver-label">${v.label}</div>
+        <div class="ver-meta">${d.toLocaleDateString('en-GB')} ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · ${lcCount} LCs · ${entCount} entry groups</div>
+      </div>
+      <div class="ver-btns">
+        <button class="vbtn vbtn-load" onclick="loadVersion(${v.id})">↩ Load</button>
+        <button class="vbtn vbtn-del"  onclick="deleteVersion(${v.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadVersion(id){
+  if(!confirm('Load this version? Current unsaved data will be replaced.')) return;
+  const vers=getVersions();
+  const v=vers.find(x=>x.id===id);
+  if(!v) return;
+  S.lcs=v.lcs||{};
+  S.entries=v.entries||[];
+  markDots();refreshSidebar();refreshSelects();
+  closeModal('modal-versions');
+  toast('Version loaded','↩');
+  showView('entries');
+}
+
+function deleteVersion(id){
+  if(!confirm('Delete this saved version?')) return;
+  const vers=getVersions().filter(v=>v.id!==id);
+  saveVersions(vers);
+  renderVersionsList();
+  updateVerDot();
+}
+
+function updateVerDot(){
+  const has=getVersions().length>0;
+  document.getElementById('d-ver').style.opacity=has?'1':'0';
+}
+
+// ═══ EXPIRY ALERTS ═══════════════════════════════════
+function checkExpiry(){
+  const alerts=[];
+  const today=new Date();today.setHours(0,0,0,0);
+  Object.values(S.lcs).forEach(lc=>{
+    if(lc.status==='closed'||!lc.expDate) return;
+    const exp=new Date(lc.expDate);exp.setHours(0,0,0,0);
+    const diff=Math.round((exp-today)/(1000*60*60*24));
+    if(diff<0) alerts.push({lc,diff,type:'crit',msg:`EXPIRED ${Math.abs(diff)} day(s) ago`});
+    else if(diff<=30) alerts.push({lc,diff,type:diff<=7?'crit':'warn',msg:`Expires in ${diff} day(s) (${lc.expDate})`});
+  });
+  return alerts;
+}
+
+function renderAlerts(){
+  const out=document.getElementById('alertsOut');
+  if(!out) return;
+  const alerts=checkExpiry();
+  if(!alerts.length){out.innerHTML='';return;}
+  out.innerHTML=alerts.map(a=>`<div class="alert-bar alert-${a.type}">
+    <span class="alert-ico">${a.type==='crit'?'🔴':'🟡'}</span>
+    <span class="alert-txt"><strong>${a.lc.lcNo}</strong> · ${a.lc.vendor||'—'} · ${a.msg}</span>
+  </div>`).join('');
+}
+
+// ═══ DASHBOARD ═══════════════════════════════════════
+function renderDashboard(){
+  renderAlerts();
+  const lcs=Object.values(S.lcs);
+  const open=lcs.filter(l=>l.status==='open');
+  const closed=lcs.filter(l=>l.status==='closed');
+  const totalVal=lcs.reduce((s,l)=>s+(l.lcValue||0),0);
+  const totalMargin=lcs.reduce((s,l)=>s+(l.marginAmt||0),0);
+  const alerts=checkExpiry();
+
+  document.getElementById('dashStats').innerHTML=`
+    <div class="dash-card dc-teal"><div class="dc-icon">🏦</div><div class="dc-val">${lcs.length}</div><div class="dc-lbl">Total LCs</div></div>
+    <div class="dash-card dc-amber"><div class="dc-icon">🟡</div><div class="dc-val">${open.length}</div><div class="dc-lbl">Open LCs</div></div>
+    <div class="dash-card dc-sky"><div class="dc-icon">🔒</div><div class="dc-val">${closed.length}</div><div class="dc-lbl">Closed LCs</div></div>
+    <div class="dash-card dc-violet"><div class="dc-icon">💰</div><div class="dc-val">${fmt(totalVal)}</div><div class="dc-lbl">Total Value (SAR)</div></div>
+    <div class="dash-card dc-teal"><div class="dc-icon">🏦</div><div class="dc-val">${fmt(totalMargin)}</div><div class="dc-lbl">Total Margin (SAR)</div></div>
+    <div class="dash-card dc-rose"><div class="dc-icon">⚠️</div><div class="dc-val">${alerts.length}</div><div class="dc-lbl">Expiry Alerts</div></div>
+    <div class="dash-card dc-amber"><div class="dc-icon">📋</div><div class="dc-val">${S.entries.length}</div><div class="dc-lbl">Journal Groups</div></div>
+    <div class="dash-card dc-sky"><div class="dc-icon">💾</div><div class="dc-val">${getVersions().length}</div><div class="dc-lbl">Saved Versions</div></div>
+  `;
+
+  document.getElementById('dashTbody').innerHTML=lcs.length
+    ? lcs.map(lc=>{
+        const exp=lc.expDate?new Date(lc.expDate):null;
+        const today=new Date();today.setHours(0,0,0,0);
+        const diff=exp?Math.round((exp-today)/(1000*60*60*24)):null;
+        const expClass=diff===null?'':(diff<0?'color:var(--rose);font-weight:700':diff<=30?'color:var(--amber);font-weight:700':'color:var(--teal)');
+        return `<tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal)">${lc.lcNo}</span></td>
+          <td>${lc.vendor||'—'}</td><td>${lc.bank||'—'}</td><td>${lc.proj||'—'}</td>
+          <td style="font-family:'JetBrains Mono',monospace">${fmt(lc.lcValue)} ${lc.currency||''}</td>
+          <td style="font-family:'JetBrains Mono',monospace">${fmt(lc.marginAmt)}</td>
+          <td>${lc.issDate||'—'}</td>
+          <td style="${expClass}">${lc.expDate||'—'}${diff!==null&&diff<0?' ⚠':diff!==null&&diff<=30?' ⏰':''}</td>
+          <td><span class="pill ${lc.status==='closed'?'p-teal':'p-amber'}" style="padding:2px 8px;font-size:10px">${lc.status.toUpperCase()}</span></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">No LCs yet</td></tr>';
+}
+
+// ═══ EXCEL EXPORT ════════════════════════════════════
+function openExcelModal(){
+  if(!S.entries.length&&!Object.keys(S.lcs).length){toast('No data to export','⚠');return;}
+  openModal('modal-excel');
+}
+
+function doExcelExport(){
+  const LC_KEYS=['lcNo','proj','vendor','bank','lcValue','currency','marginAmt','issDate','expDate','status'];
+  const JE_KEYS=['stage','badge','title','date','code','account','debit','credit'];
+  const LC_LABELS={lcNo:'LC Number',proj:'Project',vendor:'Vendor',bank:'Bank',lcValue:'LC Value',currency:'Currency',marginAmt:'Cash Margin',issDate:'Issue Date',expDate:'Expiry Date',status:'Status'};
+  const JE_LABELS={stage:'Stage',badge:'Badge',title:'Title',date:'Date',code:'Acc Code',account:'Account Name',debit:'Debit DR',credit:'Credit CR'};
+
+  // Collect checked LC columns
+  const lcCols=[];
+  document.querySelectorAll('#modal-excel input[type=checkbox]').forEach(cb=>{
+    if(cb.checked && LC_KEYS.includes(cb.value)) lcCols.push(cb.value);
+  });
+  // Collect checked JE columns
+  const jeCols=[];
+  document.querySelectorAll('#modal-excel input[type=checkbox]').forEach(cb=>{
+    if(cb.checked && JE_KEYS.includes(cb.value)) jeCols.push(cb.value);
+  });
+
+  if(!lcCols.length && !jeCols.length){toast('Select at least one column','⚠');return;}
+
+  const statusFilter=document.getElementById('xl_status').value;
+  const stageFilter=document.getElementById('xl_stage').value;
+  const projFilter=document.getElementById('xl_proj').value.trim().toLowerCase();
+
+  // Filter LCs
+  const lcKeys=Object.keys(S.lcs).filter(k=>{
+    const lc=S.lcs[k];
+    if(statusFilter!=='all'&&lc.status!==statusFilter) return false;
+    if(projFilter&&!(lc.proj||'').toLowerCase().includes(projFilter)) return false;
+    return true;
+  });
+
+  if(!lcKeys.length){toast('No LCs match the filter','⚠');return;}
+
+  // Build rows
+  const rows=[];
+  const header=[...lcCols.map(c=>LC_LABELS[c]||c),...jeCols.map(c=>JE_LABELS[c]||c)];
+  rows.push(header);
+
+  lcKeys.forEach(k=>{
+    const lc=S.lcs[k];
+    let entries=S.entries.filter(g=>g.lcNo===k);
+    if(stageFilter!=='all') entries=entries.filter(g=>g.stage===stageFilter);
+
+    if(!jeCols.length){
+      // LC data only — one row per LC
+      rows.push(lcCols.map(c=>lc[c]??''));
+    } else if(!entries.length){
+      // LC has no matching entries — still show LC data with empty JE cols
+      rows.push([...lcCols.map(c=>lc[c]??''),...jeCols.map(()=>'')]);
+    } else {
+      entries.forEach(g=>{
+        g.rows.forEach(r=>{
+          const lcPart=lcCols.map(c=>lc[c]??'');
+          const jePart=jeCols.map(c=>{
+            if(c==='stage')   return g.stage;
+            if(c==='badge')   return g.badge;
+            if(c==='title')   return g.title;
+            if(c==='date')    return g.date||'';
+            if(c==='code')    return r.code;
+            if(c==='account') return r.account;
+            if(c==='debit')   return r.dr>0?r.dr:'';
+            if(c==='credit')  return r.cr>0?r.cr:'';
+            return '';
+          });
+          rows.push([...lcPart,...jePart]);
+        });
+      });
+    }
+  });
+
+  if(rows.length<=1){toast('No data to export','⚠');return;}
+
+  const csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`LC_Export_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  closeModal('modal-excel');
+  toast(`Exported ${rows.length-1} rows`,'⬇');
+}
+
 // ═══ MOBILE SIDEBAR ═════════════════════════════════
 function toggleSidebar(){
   const sb=document.querySelector('.sidebar');
@@ -1078,8 +1554,6 @@ function closeSidebar(){
   document.getElementById('hamBtn').classList.remove('open');
   document.body.style.overflow='';
 }
-
-// close sidebar when a nav item is clicked on mobile
 document.querySelectorAll('.nb,.new-lc-btn').forEach(el=>{
   el.addEventListener('click',()=>{if(window.innerWidth<=900) closeSidebar();});
 });
@@ -1089,13 +1563,8 @@ addFeeRow('feesWrap','fExVat','fVAT','fTotal');
 addInvRow();
 addDefRow();
 addFeeRow('afWrap','afExVat','afVAT','afTotal');
+updateVerDot();
 </script>
-
-<!-- Signature -->
-<div class="signature">
-  <span class="sig-line1">Created by Mostafa Salaheldin</span>
-  <span class="sig-line2">with assistance of AI</span>
-</div>
 
 </body>
 </html>
