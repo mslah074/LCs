@@ -207,6 +207,70 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
 
 @media print{.sidebar,.tabs,.btn-row,.new-lc-btn{display:none!important}body{background:#fff}.main{padding:20px;max-width:100%}}
 
+/* ═══ MOBILE HAMBURGER ═══ */
+.mob-bar{display:none;position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:var(--surface);border-bottom:1.5px solid var(--border);align-items:center;padding:0 16px;gap:12px;box-shadow:var(--sh)}
+.mob-bar .brand-mark{width:30px;height:30px;font-size:11px}
+.mob-bar .brand-name{font-size:14px}
+.mob-bar .brand-sub{font-size:10px}
+.ham{margin-left:auto;width:36px;height:36px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;transition:all .18s}
+.ham:hover{border-color:var(--teal);background:var(--teal-bg)}
+.ham span{display:block;width:16px;height:2px;background:var(--ink2);border-radius:2px;transition:all .25s}
+.ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* sidebar overlay on mobile */
+.overlay{display:none;position:fixed;inset:0;z-index:149;background:rgba(28,25,23,.45);backdrop-filter:blur(2px)}
+.overlay.on{display:block}
+
+/* ═══ TABLET (≤900px) ═══ */
+@media(max-width:900px){
+  .shell{flex-direction:column}
+  .sidebar{width:280px;position:fixed;top:52px;left:-290px;height:calc(100vh - 52px);z-index:150;transition:left .28s cubic-bezier(.4,0,.2,1);border-right:1.5px solid var(--border);box-shadow:var(--shm)}
+  .sidebar.open{left:0}
+  .mob-bar{display:flex}
+  .main{padding:70px 18px 80px;max-width:100%}
+  .g3{grid-template-columns:repeat(2,1fr)}
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+  .dr3{grid-template-columns:1fr 1fr auto}
+  .dr4{grid-template-columns:1fr 1fr auto;grid-template-rows:auto auto}
+  .dr5{grid-template-columns:1fr 1fr auto;grid-template-rows:auto auto}
+  .topbar{flex-direction:column;align-items:flex-start;gap:8px}
+  .signature{bottom:70px}
+}
+
+/* ═══ PHONE (≤600px) ═══ */
+@media(max-width:600px){
+  .main{padding:64px 12px 80px}
+  .g3,.g2{grid-template-columns:1fr}
+  .sgrid{grid-template-columns:repeat(2,1fr)}
+  .card{padding:14px 14px}
+  .dr3,.dr4,.dr5{grid-template-columns:1fr auto;grid-template-rows:auto auto auto}
+  .dr3>:nth-child(2),.dr4>:nth-child(2),.dr5>:nth-child(2){grid-column:1}
+  .dr3>:nth-child(3),.dr4>:nth-child(3),.dr5>:nth-child(3){grid-column:1}
+  .xbtn{grid-column:2;grid-row:1}
+  .totbox{gap:14px}
+  .tv{font-size:14px}
+  .btn-row{flex-wrap:wrap;justify-content:stretch}
+  .btn-row .btn{flex:1;justify-content:center;font-size:12px;padding:9px 10px}
+  .tabs{width:100%;overflow-x:auto;padding-bottom:2px;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .tab{padding:6px 12px;font-size:12px}
+  .jt{font-size:12px}
+  .jhd{flex-wrap:wrap;gap:6px}
+  .jn{margin-left:0;width:100%}
+  .lc-bar{flex-wrap:wrap;gap:6px}
+  .topbar .btn{font-size:11px;padding:6px 10px}
+  .pt{font-size:18px}
+  .chd{font-size:13px}
+  .sgrid{grid-template-columns:1fr 1fr}
+  .sc{padding:10px 12px}
+  .sc-v{font-size:15px}
+  .signature{left:12px;bottom:72px}
+  .sig-line1{font-size:11px}
+  .sig-line2{font-size:9px}
+  .toast{bottom:auto;top:60px;right:12px;left:12px;font-size:12px}
+}
+
 /* SIGNATURE */
 .signature{
   position:fixed;
@@ -239,6 +303,16 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
 </style>
 </head>
 <body>
+<!-- MOBILE TOP BAR -->
+<div class="mob-bar">
+  <div class="brand-mark">LC</div>
+  <div><div class="brand-name">LC Manager</div><div class="brand-sub">Lifecycle · Journals</div></div>
+  <button class="ham" id="hamBtn" onclick="toggleSidebar()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
 <div class="shell">
 
 <!-- SIDEBAR -->
@@ -987,6 +1061,28 @@ function resetIssuance(){
   recalcF('feesWrap','fExVat','fVAT','fTotal');
   showView('issuance');
 }
+
+// ═══ MOBILE SIDEBAR ═════════════════════════════════
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('overlay');
+  const hm=document.getElementById('hamBtn');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('on',open);
+  hm.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeSidebar(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('hamBtn').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// close sidebar when a nav item is clicked on mobile
+document.querySelectorAll('.nb,.new-lc-btn').forEach(el=>{
+  el.addEventListener('click',()=>{if(window.innerWidth<=900) closeSidebar();});
+});
 
 // ═══ INIT ════════════════════════════════════════════
 addFeeRow('feesWrap','fExVat','fVAT','fTotal');
