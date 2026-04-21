@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC Lifecycle Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Familjen+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee;--bg2:#ede9e1;--surface:#fff;--surface2:#faf8f4;
+  --border:#e2ddd5;--border2:#cec8be;
+  --ink:#1c1917;--ink2:#44403c;--muted:#78716c;--muted2:#a8a29e;
+  --teal:#0d9488;--teal-bg:#f0fdfa;--teal-bdr:#99f6e4;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-bdr:#fde68a;
+  --rose:#e11d48;--rose-bg:#fff1f2;--rose-bdr:#fecdd3;
+  --violet:#7c3aed;--violet-bg:#f5f3ff;--violet-bdr:#ddd6fe;
+  --sky:#0284c7;--sky-bg:#f0f9ff;--sky-bdr:#bae6fd;
+  --lime:#65a30d;--lime-bg:#f7fee7;--lime-bdr:#d9f99d;
+  --r:14px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.55}
+
+/* LAYOUT */
+.shell{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:264px;flex-shrink:0;background:var(--surface);border-right:1.5px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-top{padding:20px 18px 16px;border-bottom:1.5px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0d9488,#0891b2);display:flex;align-items:center;justify-content:center;font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(13,148,136,.3)}
+.brand-name{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--ink)}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.nav{padding:12px 10px;flex:1}
+.nav-group{margin-bottom:20px}
+.nav-gl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);padding:0 8px;margin-bottom:5px}
+.nb{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border-radius:var(--rs);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);text-align:left;transition:all .15s}
+.nb:hover{background:var(--bg2);color:var(--ink)}
+.nb.on{background:var(--teal-bg);color:var(--teal);font-weight:700}
+.nb .ni{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--bg2);flex-shrink:0;transition:all .15s}
+.nb.on .ni{background:rgba(13,148,136,.15)}
+.nb .nd{width:7px;height:7px;border-radius:50%;margin-left:auto;background:var(--teal);opacity:0;transition:opacity .2s;flex-shrink:0}
+.nb.hd .nd{opacity:1}
+hr.nhr{border:none;border-top:1.5px solid var(--border);margin:4px 10px 14px}
+.lc-list{padding:0 10px 10px}
+.lc-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface2);margin-bottom:6px;cursor:pointer;transition:all .15s}
+.lc-item:hover{border-color:var(--border2);box-shadow:var(--sh)}
+.lc-item.sel{border-color:var(--teal);background:var(--teal-bg)}
+.lc-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--teal)}
+.lc-vendor{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.lc-st{margin-left:auto;font-size:10px;font-weight:700;text-transform:uppercase;flex-shrink:0}
+.st-open{color:var(--amber)}.st-closed{color:var(--teal)}
+.new-lc-btn{margin:0 10px 14px;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:var(--rs);width:calc(100% - 20px);background:none;border:1.5px dashed var(--border2);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.new-lc-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+
+/* MAIN */
+.main{flex:1;padding:30px 38px;overflow-y:auto;min-height:100vh;max-width:calc(100vw - 264px)}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:14px;flex-wrap:wrap}
+.pt{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:23px;color:var(--ink);line-height:1.2}
+.pt em{color:var(--teal);font-style:normal}
+.pd{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* PILL */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border:1.5px solid}
+.p-teal  {color:var(--teal);border-color:var(--teal-bdr);background:var(--teal-bg)}
+.p-amber {color:var(--amber);border-color:var(--amber-bdr);background:var(--amber-bg)}
+.p-rose  {color:var(--rose);border-color:var(--rose-bdr);background:var(--rose-bg)}
+.p-violet{color:var(--violet);border-color:var(--violet-bdr);background:var(--violet-bg)}
+.p-sky   {color:var(--sky);border-color:var(--sky-bdr);background:var(--sky-bg)}
+.p-lime  {color:var(--lime);border-color:var(--lime-bdr);background:var(--lime-bg)}
+
+/* CARD */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;box-shadow:var(--sh)}
+.card.a-teal  {border-top:3px solid var(--teal)}
+.card.a-amber {border-top:3px solid var(--amber)}
+.card.a-violet{border-top:3px solid var(--violet)}
+.card.a-sky   {border-top:3px solid var(--sky)}
+.card.a-lime  {border-top:3px solid var(--lime)}
+.card.a-rose  {border-top:3px solid var(--rose)}
+.chd{display:flex;align-items:center;gap:10px;font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:16px}
+.cico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg2);border:1.5px solid var(--border);flex-shrink:0}
+
+/* GRID */
+.grid{display:grid;gap:13px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g1{grid-template-columns:1fr}
+
+/* FIELD */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+.field input,.field select{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border-color .18s,box-shadow .18s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.1)}
+.field input::placeholder{color:var(--muted2)}
+.field select option{background:var(--surface)}
+.field input[readonly]{background:var(--amber-bg);border-color:var(--amber-bdr);color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:12px}
+
+/* DYNAMIC ROWS */
+.dr{display:grid;gap:10px;align-items:end;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);padding:11px 13px;margin-bottom:8px;transition:border-color .15s}
+.dr:hover{border-color:var(--border2)}
+.dr3{grid-template-columns:2fr 1fr auto}
+.dr4{grid-template-columns:1.2fr 1.8fr 1fr auto}
+.dr5{grid-template-columns:1fr 1.6fr 1fr 1fr auto}
+.xbtn{width:28px;height:28px;border-radius:var(--rs);border:1.5px solid var(--rose-bdr);background:var(--rose-bg);color:var(--rose);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;align-self:flex-end;flex-shrink:0}
+.xbtn:hover{background:var(--rose);color:#fff}
+.add-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px dashed var(--border2);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border-radius:var(--rs);cursor:pointer;margin-top:4px;transition:all .15s}
+.add-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-bg)}
+
+/* TOTBOX */
+.totbox{display:flex;gap:28px;flex-wrap:wrap;margin-top:14px;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs)}
+.tl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:2px}
+.tv{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600;color:var(--ink)}
+.tv-teal{color:var(--teal)}.tv-amber{color:var(--amber)}.tv-violet{color:var(--violet)}.tv-sky{color:var(--sky)}
+
+/* BUTTONS */
+.btn-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:var(--rs);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;padding:9px 20px;border:none}
+.btn:active{transform:scale(.97)}
+.b-ghost{background:none;border:1.5px solid var(--border);color:var(--muted)}
+.b-ghost:hover{border-color:var(--border2);color:var(--ink);background:var(--bg2)}
+.b-teal{background:var(--teal);color:#fff;box-shadow:0 3px 12px rgba(13,148,136,.28)}
+.b-teal:hover{background:#0f766e;transform:translateY(-1px);box-shadow:0 5px 18px rgba(13,148,136,.36)}
+.b-amber{background:var(--amber);color:#fff;box-shadow:0 3px 12px rgba(217,119,6,.28)}
+.b-amber:hover{background:#b45309;transform:translateY(-1px)}
+.b-violet{background:var(--violet);color:#fff;box-shadow:0 3px 12px rgba(124,58,237,.28)}
+.b-violet:hover{background:#6d28d9;transform:translateY(-1px)}
+.b-sky{background:var(--sky);color:#fff;box-shadow:0 3px 12px rgba(2,132,199,.28)}
+.b-sky:hover{background:#0369a1;transform:translateY(-1px)}
+.b-rose{background:var(--rose);color:#fff;box-shadow:0 3px 12px rgba(225,29,72,.28)}
+.b-rose:hover{background:#be123c;transform:translateY(-1px)}
+.btn-sm{padding:6px 13px;font-size:12px}
+
+/* VIEWS */
+.view{display:none;animation:popIn .3s ease}
+.view.on{display:block}
+@keyframes popIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* TABS */
+.tabs{display:inline-flex;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:4px;gap:3px;margin-bottom:20px;box-shadow:var(--sh)}
+.tab{padding:6px 16px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;border:none;background:none}
+.tab.on{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(13,148,136,.28)}
+
+/* LC BAR */
+.lc-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--teal-bg);border:1.5px solid var(--teal-bdr);border-radius:var(--r);margin-bottom:16px}
+.lc-bar .lc-num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--teal)}
+.mi{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.mi strong{color:var(--ink);font-weight:600}
+
+/* ENTRIES TABLE */
+.jw{margin-bottom:18px}
+.jhd{display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:var(--rs) var(--rs) 0 0;background:var(--bg2);border:1.5px solid var(--border);border-bottom:none}
+.jbadge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--violet-bg);color:var(--violet);border:1.5px solid var(--violet-bdr)}
+.jbadge.ba{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bdr)}
+.jbadge.bt{background:var(--teal-bg);color:var(--teal);border-color:var(--teal-bdr)}
+.jbadge.bs{background:var(--sky-bg);color:var(--sky);border-color:var(--sky-bdr)}
+.jbadge.br{background:var(--rose-bg);color:var(--rose);border-color:var(--rose-bdr)}
+.jt{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:13px;color:var(--ink)}
+.jn{margin-left:auto;font-size:11px;color:var(--muted);font-style:italic}
+table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);border-top:none;background:var(--surface)}
+.jet thead tr{background:var(--surface2)}
+.jet th{padding:8px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1.5px solid var(--border)}
+.jet td{padding:9px 13px;border-bottom:1.5px solid var(--bg2);font-size:12px;vertical-align:middle}
+.jet tbody tr:last-child td{border-bottom:none}
+.jet tbody tr:hover td{background:var(--bg2)}
+.jet tfoot td{padding:9px 13px;border-top:1.5px solid var(--border);background:var(--surface2);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600}
+.an{font-weight:600;color:var(--ink)}
+.ac{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.dr-t{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--rose-bg);border:1.5px solid var(--rose-bdr);color:var(--rose)}
+.cr-t{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--teal-bg);border:1.5px solid var(--teal-bdr);color:var(--teal)}
+.a-dr{font-family:'JetBrains Mono',monospace;color:var(--rose);font-weight:600}
+.a-cr{font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:600}
+.a-dash{color:var(--muted2)}
+
+/* SUMMARY */
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:20px}
+.sc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
+.sc-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px}
+.sc-v{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;color:var(--ink)}
+
+/* BALANCE */
+.bok{display:inline-block;padding:3px 11px;border-radius:5px;font-size:12px;font-weight:700;background:var(--teal-bg);border:1.5px solid var(--teal-bdr);color:var(--teal)}
+.bfail{display:inline-block;padding:3px 11px;border-radius:5px;font-size:12px;font-weight:700;background:var(--rose-bg);border:1.5px solid var(--rose-bdr);color:var(--rose)}
+
+/* META CHIP */
+.mc{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:5px;background:var(--surface2);border:1.5px solid var(--border);color:var(--muted)}
+
+/* INVOICE STATUS */
+.ist{display:inline-flex;align-items:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:20px;border:1.5px solid}
+.ist.lcp{color:var(--violet);border-color:var(--violet-bdr);background:var(--violet-bg)}
+.ist.paid{color:var(--teal);border-color:var(--teal-bdr);background:var(--teal-bg)}
+.ist.unp{color:var(--amber);border-color:var(--amber-bdr);background:var(--amber-bg)}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;align-items:center;gap:9px;padding:11px 18px;border-radius:var(--r);background:var(--ink);color:#f5f3ee;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.18);transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px}
+.ei{font-size:38px;margin-bottom:11px;opacity:.45}
+.et{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.es{font-size:13px;color:var(--muted2)}
+
+@media print{.sidebar,.tabs,.btn-row,.new-lc-btn{display:none!important}body{background:#fff}.main{padding:20px;max-width:100%}}
+
+/* SIGNATURE */
+.signature{
+  position:fixed;
+  bottom:18px;
+  left:22px;
+  z-index:998;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  pointer-events:none;
+}
+.sig-line1{
+  font-family:'Playfair Display','Georgia',serif;
+  font-size:12px;
+  font-weight:700;
+  font-style:italic;
+  color:var(--teal);
+  letter-spacing:.3px;
+  opacity:.85;
+  text-shadow:0 1px 4px rgba(13,148,136,.15);
+}
+.sig-line2{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:10px;
+  font-weight:500;
+  color:var(--muted2);
+  letter-spacing:.5px;
+  opacity:.75;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <div class="brand-mark">LC</div>
+      <div><div class="brand-name">LC Manager</div><div class="brand-sub">Lifecycle · Journals</div></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-group">
+      <div class="nav-gl">Workflows</div>
+      <button class="nb on" id="nb-issuance" onclick="showView('issuance')"><span class="ni">🏦</span>New Issuance<span class="nd"></span></button>
+      <button class="nb" id="nb-invoices"  onclick="showView('invoices')"><span class="ni">🧾</span>Invoices<span class="nd" id="d-inv"></span></button>
+      <button class="nb" id="nb-fees"      onclick="showView('fees')"><span class="ni">💳</span>Additional Fees<span class="nd" id="d-fees"></span></button>
+      <button class="nb" id="nb-closing"   onclick="showView('closing')"><span class="ni">🔒</span>Close LC<span class="nd" id="d-cl"></span></button>
+      <button class="nb" id="nb-entries"   onclick="showView('entries')"><span class="ni">📋</span>Journal Entries<span class="nd" id="d-ent"></span></button>
+    </div>
+    <hr class="nhr">
+    <div class="nav-group">
+      <div class="nav-gl">Active LCs</div>
+      <div class="lc-list" id="lcList"><div style="padding:5px 7px;font-size:12px;color:var(--muted2)">No LCs yet</div></div>
+      <button class="new-lc-btn" onclick="resetIssuance()">＋ New LC</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ── ISSUANCE ── -->
+<div class="view on" id="view-issuance">
+  <div class="topbar">
+    <div><div class="pt">New LC <em>Issuance</em></div><div class="pd">Create a new Letter of Credit and generate opening journal entries</div></div>
+    <span class="pill p-amber">⬤ Issuance</span>
+  </div>
+
+  <div class="card a-amber">
+    <div class="chd"><span class="cico">📄</span>LC Master Data</div>
+    <div class="grid g3">
+      <div class="field"><label>Project No.</label><input id="i_proj" type="text" placeholder="PRJ-2024-001"></div>
+      <div class="field"><label>LC Number</label><input id="i_lcno" type="text" placeholder="LC-2024-001"></div>
+      <div class="field"><label>LC Value</label><input id="i_val" type="number" placeholder="0.00" step="0.01" oninput="calcMargin()"></div>
+      <div class="field"><label>Bank</label><input id="i_bank" type="text" placeholder="e.g. Saudi National Bank"></div>
+      <div class="field"><label>Vendor / Beneficiary</label><input id="i_vendor" type="text" placeholder="Vendor name"></div>
+      <div class="field"><label>Currency</label>
+        <select id="i_cur"><option value="SAR">SAR — Saudi Riyal</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
+      </div>
+      <div class="field"><label>Issuance Date</label><input id="i_iss" type="date"></div>
+      <div class="field"><label>Expiry Date</label><input id="i_exp" type="date"></div>
+      <div class="field"><label>Cash Margin %</label><input id="i_mPct" type="number" placeholder="10" step="0.01" oninput="calcMargin()"></div>
+    </div>
+    <div class="grid g2" style="margin-top:13px">
+      <div class="field"><label>Cash Margin SAR (auto)</label><input id="i_mAmt" type="number" readonly placeholder="0.00"></div>
+      <div class="field"><label>Description</label><input id="i_notes" type="text" placeholder="Brief description"></div>
+    </div>
+  </div>
+
+  <div class="card a-teal">
+    <div class="chd"><span class="cico">💳</span>Issuance Fees</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:13px">DR: Expense accounts | CR: Bank. VAT auto-added at 15% unless entered manually.</p>
+    <div id="feesWrap"></div>
+    <button class="add-btn" onclick="addFeeRow('feesWrap','fExVat','fVAT','fTotal')">＋ Add fee line</button>
+    <div class="totbox">
+      <div><div class="tl">Fees (ex-VAT)</div><div class="tv" id="fExVat">0.00</div></div>
+      <div><div class="tl">VAT 15%</div><div class="tv tv-amber" id="fVAT">0.00</div></div>
+      <div><div class="tl">Total</div><div class="tv tv-teal" id="fTotal">0.00</div></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn b-amber" onclick="genIssuance()">⚡ Generate Issuance Journal Entries</button>
+  </div>
+</div>
+
+<!-- ── INVOICES (mid-lifecycle) ── -->
+<div class="view" id="view-invoices">
+  <div class="topbar">
+    <div><div class="pt">Invoices <em>Mid-Lifecycle</em></div><div class="pd">Attach invoices to an open LC · generate payment entries · mark as Paid by LC</div></div>
+    <span class="pill p-violet">⬤ Invoices</span>
+  </div>
+
+  <div class="card">
+    <div class="chd"><span class="cico">🔗</span>Select LC</div>
+    <div class="grid g2">
+      <div class="field"><label>LC Number</label>
+        <select id="inv_lc" onchange="onSel('inv_lc','inv_bar')">
+          <option value="">— Select an open LC —</option>
+        </select>
+      </div>
+      <div class="field"><label>Payment Method</label>
+        <select id="inv_pay">
+          <option value="lc">Via LC (Paid by LC)</option>
+          <option value="bank">Bank Account</option>
+          <option value="loan">Loan Account</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="inv_bar"></div>
+
+  <div class="card a-violet">
+    <div class="chd"><span class="cico">🧾</span>Invoice Lines</div>
+    <div id="invWrap"></div>
+    <button class="add-btn" onclick="addInvRow()">＋ Add invoice</button>
+    <div class="totbox">
+      <div><div class="tl">Invoice Total</div><div class="tv tv-violet" id="invTotal">0.00</div></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn b-violet" onclick="genInvoices()">📎 Generate Invoice Journal Entries</button>
+  </div>
+</div>
+
+<!-- ── ADDITIONAL FEES ── -->
+<div class="view" id="view-fees">
+  <div class="topbar">
+    <div><div class="pt">Additional <em>Fees</em></div><div class="pd">Post extra charges to an open LC without closing it</div></div>
+    <span class="pill p-sky">⬤ Additional Fees</span>
+  </div>
+
+  <div class="card">
+    <div class="chd"><span class="cico">🔗</span>Select LC</div>
+    <div class="field" style="max-width:300px">
+      <label>LC Number</label>
+      <select id="af_lc" onchange="onSel('af_lc','af_bar')">
+        <option value="">— Select an open LC —</option>
+      </select>
+    </div>
+  </div>
+  <div id="af_bar"></div>
+
+  <div class="card a-sky">
+    <div class="chd"><span class="cico">💳</span>Additional Fee Lines</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:13px">Posted mid-lifecycle without closing the LC. DR: Expense · CR: Bank.</p>
+    <div id="afWrap"></div>
+    <button class="add-btn" onclick="addFeeRow('afWrap','afExVat','afVAT','afTotal')">＋ Add fee line</button>
+    <div class="totbox">
+      <div><div class="tl">Fees (ex-VAT)</div><div class="tv" id="afExVat">0.00</div></div>
+      <div><div class="tl">VAT 15%</div><div class="tv tv-amber" id="afVAT">0.00</div></div>
+      <div><div class="tl">Total</div><div class="tv tv-sky" id="afTotal">0.00</div></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn b-sky" onclick="genAddlFees()">💳 Generate Additional Fee Entries</button>
+  </div>
+</div>
+
+<!-- ── CLOSING ── -->
+<div class="view" id="view-closing">
+  <div class="topbar">
+    <div><div class="pt">LC <em>Closing</em></div><div class="pd">Release cash margin · settle deferred charges · close the LC</div></div>
+    <span class="pill p-teal">⬤ Closing</span>
+  </div>
+
+  <div class="card">
+    <div class="chd"><span class="cico">🔗</span>Select LC to Close</div>
+    <div class="grid g2">
+      <div class="field"><label>LC Number</label>
+        <select id="cl_lc" onchange="onSel('cl_lc','cl_bar','closing')">
+          <option value="">— Select an LC —</option>
+        </select>
+      </div>
+      <div class="field"><label>Payment Method (invoices)</label>
+        <select id="cl_pay">
+          <option value="bank">Bank Account</option>
+          <option value="loan">Loan Account</option>
+          <option value="other">Other Account</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div id="cl_bar"></div>
+
+  <div class="card a-teal">
+    <div class="chd"><span class="cico">🏦</span>Cash Margin Release</div>
+    <div class="grid g2">
+      <div class="field"><label>Amount to Release (SAR)</label><input id="cl_margin" type="number" placeholder="0.00" step="0.01"></div>
+      <div class="field"><label>Closing Note</label><input id="cl_note" type="text" placeholder="Remark"></div>
+    </div>
+  </div>
+
+  <div class="card a-amber">
+    <div class="chd"><span class="cico">📅</span>Deferred Charges</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:13px">Record deferred commissions and related charges at closing.</p>
+    <div id="defWrap"></div>
+    <button class="add-btn" onclick="addDefRow()">＋ Add deferred charge</button>
+    <div class="totbox">
+      <div><div class="tl">Total Deferred</div><div class="tv tv-amber" id="defTotal">0.00</div></div>
+    </div>
+  </div>
+
+  <div class="card a-lime">
+    <div class="chd"><span class="cico">📊</span>Cost Sheet Allocation</div>
+    <div class="grid g2">
+      <div class="field"><label>Allocate all LC fees to project?</label>
+        <select id="cl_cost"><option value="yes">Yes — transfer to Cost Sheet</option><option value="no">No</option></select>
+      </div>
+      <div class="field"><label>Final Note</label><input id="cl_final" type="text" placeholder="Any closing remarks"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn b-ghost" onclick="showView('entries')">View Entries</button>
+    <button class="btn b-teal" onclick="genClosing()">🔒 Generate Closing Journal Entries</button>
+  </div>
+</div>
+
+<!-- ── ENTRIES ── -->
+<div class="view" id="view-entries">
+  <div class="topbar">
+    <div><div class="pt">Journal <em>Entries</em></div><div class="pd">All generated accounting entries grouped by LC lifecycle</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn b-ghost btn-sm" onclick="showView('issuance')">← Back</button>
+      <button class="btn b-ghost btn-sm" onclick="window.print()">🖨 Print</button>
+      <button class="btn b-sky btn-sm"   onclick="exportCSV()">⬇ CSV</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('all')"      id="t-all">All</button>
+    <button class="tab"    onclick="setTab('issuance')" id="t-issuance">Issuance</button>
+    <button class="tab"    onclick="setTab('invoice')"  id="t-invoice">Invoices</button>
+    <button class="tab"    onclick="setTab('addl')"     id="t-addl">Addl Fees</button>
+    <button class="tab"    onclick="setTab('closing')"  id="t-closing">Closing</button>
+  </div>
+
+  <div id="entriesOut"></div>
+</div>
+
+</main>
+</div>
+
+<div class="toast" id="toast"><span id="tIco"></span><span id="tMsg"></span></div>
+
+<script>
+// ═══ STATE ══════════════════════════════════════════
+const S={lcs:{},entries:[],tab:'all'};
+
+// ═══ NAV ═══════════════════════════════════════════
+function showView(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(e=>e.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('on');
+  document.getElementById('nb-'+v).classList.add('on');
+  if(v==='entries') renderEntries();
+  if(['invoices','fees','closing'].includes(v)) refreshSelects();
+}
+
+function setTab(t){
+  S.tab=t;
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('on'));
+  document.getElementById('t-'+t).classList.add('on');
+  renderEntries();
+}
+
+// ═══ UTILS ══════════════════════════════════════════
+const fmt=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function toast(msg,ico='✓',ms=3000){
+  const el=document.getElementById('toast');
+  document.getElementById('tMsg').textContent=msg;
+  document.getElementById('tIco').textContent=ico+' ';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),ms);
+}
+
+function calcMargin(){
+  const v=parseFloat(document.getElementById('i_val').value)||0;
+  const p=parseFloat(document.getElementById('i_mPct').value)||0;
+  document.getElementById('i_mAmt').value=(v*p/100).toFixed(2);
+}
+
+// ═══ FEE ROWS ════════════════════════════════════════
+const FT={
+  issuance:{l:'LC Issuance Fee',c:'6210'},
+  postal:  {l:'Postal / Courier Charges',c:'6215'},
+  swift:   {l:'SWIFT / Telex Charges',c:'6220'},
+  vat:     {l:'VAT on Purchase (manual)',c:'2310'},
+  amend:   {l:'Amendment Fee',c:'6225'},
+  other:   {l:'Other Bank Charges',c:'6299'},
+};
+const ftOpts=()=>Object.entries(FT).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('');
+
+function addFeeRow(wid,exId,vatId,totId){
+  const w=document.getElementById(wid);
+  const r=document.createElement('div');
+  r.className='dr dr3';
+  r.innerHTML=`
+    <div class="field"><label>Fee Type</label>
+      <select class="ftype" onchange="recalcF('${wid}','${exId}','${vatId}','${totId}')">${ftOpts()}</select>
+    </div>
+    <div class="field"><label>Amount (SAR)</label>
+      <input type="number" class="famt" placeholder="0.00" step="0.01" oninput="recalcF('${wid}','${exId}','${vatId}','${totId}')">
+    </div>
+    <button class="xbtn" onclick="this.closest('.dr').remove();recalcF('${wid}','${exId}','${vatId}','${totId}')">×</button>
+  `;
+  w.appendChild(r);
+}
+
+function recalcF(wid,exId,vatId,totId){
+  let ex=0,mv=0;
+  document.querySelectorAll(`#${wid} .dr`).forEach(r=>{
+    const t=r.querySelector('.ftype').value;
+    const a=parseFloat(r.querySelector('.famt').value)||0;
+    if(t==='vat') mv+=a; else ex+=a;
+  });
+  const av=mv>0?mv:ex*0.15;
+  document.getElementById(exId).textContent=fmt(ex);
+  document.getElementById(vatId).textContent=fmt(mv>0?mv:av);
+  document.getElementById(totId).textContent=fmt(ex+(mv>0?mv:av));
+}
+
+function collectFees(wid,bank){
+  let ex=0,mv=0;
+  const rows=[];
+  document.querySelectorAll(`#${wid} .dr`).forEach(r=>{
+    const t=r.querySelector('.ftype').value;
+    const a=parseFloat(r.querySelector('.famt').value)||0;
+    if(a<=0) return;
+    const m=FT[t]||{l:t,c:'6299'};
+    if(t==='vat') mv+=a;
+    else{rows.push({account:m.l,code:m.c,dr:a,cr:0});ex+=a;}
+  });
+  const vat=mv>0?mv:(ex>0?ex*0.15:0);
+  if(vat>0) rows.push({account:'VAT on Purchase (15%)',code:'2310',dr:vat,cr:0});
+  const total=ex+vat;
+  if(rows.length>0) rows.push({account:(bank||'Bank')+' — Bank Account',code:'1110',dr:0,cr:total});
+  return{rows,total};
+}
+
+// ═══ INVOICE ROWS ════════════════════════════════════
+function addInvRow(){
+  const w=document.getElementById('invWrap');
+  const r=document.createElement('div');
+  r.className='dr dr5';
+  r.innerHTML=`
+    <div class="field"><label>Invoice No.</label><input type="text" class="ino" placeholder="INV-001"></div>
+    <div class="field"><label>Description</label><input type="text" class="idesc" placeholder="Goods / Services"></div>
+    <div class="field"><label>Amount (SAR)</label><input type="number" class="iamt" placeholder="0.00" step="0.01" oninput="recalcInv()"></div>
+    <div class="field"><label>Status</label>
+      <select class="ist2">
+        <option value="lc-paid">Paid by LC</option>
+        <option value="paid">Paid (Other)</option>
+        <option value="unpaid">Unpaid</option>
+      </select>
+    </div>
+    <button class="xbtn" onclick="this.closest('.dr').remove();recalcInv()">×</button>
+  `;
+  w.appendChild(r);
+}
+
+function recalcInv(){
+  let t=0;
+  document.querySelectorAll('#invWrap .iamt').forEach(i=>t+=parseFloat(i.value)||0);
+  document.getElementById('invTotal').textContent=fmt(t);
+}
+
+// ═══ DEFERRED ROWS ═══════════════════════════════════
+const DT={
+  deferred_comm:{l:'Deferred Commission Expense',c:'1720'},
+  vat_def:      {l:'VAT on Deferred Commission',c:'2310'},
+  handling:     {l:'Handling Fee',c:'6230'},
+  other_def:    {l:'Other Deferred Charge',c:'1729'},
+};
+
+function addDefRow(){
+  const w=document.getElementById('defWrap');
+  const r=document.createElement('div');
+  r.className='dr dr3';
+  r.innerHTML=`
+    <div class="field"><label>Charge Type</label>
+      <select class="dtype">${Object.entries(DT).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Amount (SAR)</label>
+      <input type="number" class="damt" placeholder="0.00" step="0.01" oninput="recalcDef()">
+    </div>
+    <button class="xbtn" onclick="this.closest('.dr').remove();recalcDef()">×</button>
+  `;
+  w.appendChild(r);
+}
+
+function recalcDef(){
+  let t=0;
+  document.querySelectorAll('#defWrap .damt').forEach(i=>t+=parseFloat(i.value)||0);
+  document.getElementById('defTotal').textContent=fmt(t);
+}
+
+// ═══ LC SELECTS & BAR ════════════════════════════════
+function refreshSelects(){
+  const keys=Object.keys(S.lcs);
+  [['inv_lc',false],['af_lc',false],['cl_lc',true]].forEach(([id,all])=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    const cur=sel.value;
+    const opts=keys.filter(k=>all||S.lcs[k].status==='open')
+      .map(k=>`<option value="${k}">${k} — ${S.lcs[k].vendor||'N/A'}</option>`).join('');
+    sel.innerHTML=`<option value="">— Select${all?'':' an open'} LC —</option>`+opts;
+    if(cur&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+  });
+}
+
+function lcBar(lcNo){
+  if(!lcNo||!S.lcs[lcNo]) return '';
+  const lc=S.lcs[lcNo];
+  const nInv=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='invoice').length;
+  const nAF=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='addl').length;
+  return `<div class="lc-bar">
+    <span class="lc-num">${lc.lcNo}</span>
+    <span class="mi"><strong>${lc.vendor||'—'}</strong></span>
+    <span class="mi">Bank: <strong>${lc.bank||'—'}</strong></span>
+    <span class="mi">Value: <strong>${fmt(lc.lcValue)} ${lc.currency}</strong></span>
+    <span class="mi">Margin: <strong>${fmt(lc.marginAmt)} SAR</strong></span>
+    <span class="mi">Invoice JEs: <strong>${nInv}</strong></span>
+    <span class="mi">Addl Fee JEs: <strong>${nAF}</strong></span>
+    <span class="pill ${lc.status==='closed'?'p-teal':'p-amber'}" style="margin-left:auto">${lc.status.toUpperCase()}</span>
+  </div>`;
+}
+
+function onSel(selId,barId,mode=''){
+  const lcNo=document.getElementById(selId).value;
+  document.getElementById(barId).innerHTML=lcBar(lcNo);
+  if(mode==='closing'&&lcNo&&S.lcs[lcNo])
+    document.getElementById('cl_margin').value=S.lcs[lcNo].marginAmt||'';
+}
+
+// ═══ SIDEBAR ════════════════════════════════════════
+function refreshSidebar(){
+  const list=document.getElementById('lcList');
+  const keys=Object.keys(S.lcs);
+  if(!keys.length){list.innerHTML='<div style="padding:5px 7px;font-size:12px;color:var(--muted2)">No LCs yet</div>';return;}
+  list.innerHTML=keys.map(k=>{
+    const lc=S.lcs[k];
+    return `<div class="lc-item" onclick="quickJump('${k}')">
+      <div><div class="lc-num">${lc.lcNo}</div><div class="lc-vendor">${lc.vendor||'—'}</div></div>
+      <span class="lc-st ${lc.status==='closed'?'st-closed':'st-open'}">${lc.status}</span>
+    </div>`;
+  }).join('');
+}
+
+function quickJump(k){
+  const lc=S.lcs[k];
+  if(!lc) return;
+  if(lc.status==='open'){
+    showView('invoices');
+    setTimeout(()=>{document.getElementById('inv_lc').value=k;onSel('inv_lc','inv_bar');},50);
+  } else showView('entries');
+}
+
+// ═══ MAKE GROUP ══════════════════════════════════════
+function mkG(lcNo,stage,badge,title,note,date,rows,extra={}){
+  return{id:`${lcNo}-${badge}`,lcNo,stage,badge,title,note,date,rows,...extra};
+}
+
+function replaceStage(lcNo,stage,groups){
+  S.entries=S.entries.filter(g=>!(g.lcNo===lcNo&&g.stage===stage));
+  S.entries.push(...groups);
+}
+
+function markDots(){
+  document.getElementById('d-inv').style.opacity=S.entries.some(g=>g.stage==='invoice')?'1':'0';
+  document.getElementById('d-fees').style.opacity=S.entries.some(g=>g.stage==='addl')?'1':'0';
+  document.getElementById('d-cl').style.opacity=S.entries.some(g=>g.stage==='closing')?'1':'0';
+  document.getElementById('d-ent').style.opacity=S.entries.length?'1':'0';
+}
+
+// ═══ GEN: ISSUANCE ═══════════════════════════════════
+function genIssuance(){
+  const lcNo=document.getElementById('i_lcno').value.trim();
+  const lcValue=parseFloat(document.getElementById('i_val').value)||0;
+  const bank=document.getElementById('i_bank').value.trim()||'Bank';
+  const vendor=document.getElementById('i_vendor').value.trim()||'Vendor';
+  const proj=document.getElementById('i_proj').value.trim();
+  const currency=document.getElementById('i_cur').value;
+  const issDate=document.getElementById('i_iss').value;
+  const expDate=document.getElementById('i_exp').value;
+  const marginAmt=parseFloat(document.getElementById('i_mAmt').value)||0;
+
+  if(!lcNo){toast('Enter LC Number','⚠');return;}
+  if(lcValue<=0){toast('Enter LC Value','⚠');return;}
+
+  const groups=[];
+
+  if(marginAmt>0){
+    groups.push(mkG(lcNo,'issuance','JE-01','Cash Margin Deposit',`Deposit for LC ${lcNo}`,issDate,[
+      {account:'LC Cash Margin Deposit',code:'1150',dr:marginAmt,cr:0},
+      {account:bank+' — Bank Account',code:'1110',dr:0,cr:marginAmt},
+    ]));
+  }
+
+  const{rows:fRows}=collectFees('feesWrap',bank);
+  if(fRows.length>0){
+    groups.push(mkG(lcNo,'issuance','JE-02','Issuance Fees & Charges',`Bank charges for LC ${lcNo}`,issDate,fRows));
+  }
+
+  if(!groups.length){toast('No entries to generate','⚠');return;}
+
+  S.lcs[lcNo]={lcNo,lcValue,bank,vendor,proj,currency,issDate,expDate,marginAmt,status:'open'};
+  replaceStage(lcNo,'issuance',groups);
+  markDots();refreshSidebar();refreshSelects();
+  toast(`Issuance entries created for ${lcNo}`,'✓');
+  setTimeout(()=>showView('entries'),500);
+}
+
+// ═══ GEN: INVOICES ═══════════════════════════════════
+function genInvoices(){
+  const lcNo=document.getElementById('inv_lc').value;
+  if(!lcNo||!S.lcs[lcNo]){toast('Select an LC','⚠');return;}
+  const lc=S.lcs[lcNo];
+  const pay=document.getElementById('inv_pay').value;
+  const PAY={lc:{l:'LC Liability Account',c:'2115'},bank:{l:lc.bank+' — Bank Account',c:'1110'},loan:{l:'Loan Account',c:'2510'}};
+  const pa=PAY[pay]||PAY.bank;
+  const seq=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='invoice').length+1;
+
+  const invs=[];
+  document.querySelectorAll('#invWrap .dr').forEach(r=>{
+    const no=r.querySelector('.ino').value;
+    const amt=parseFloat(r.querySelector('.iamt').value)||0;
+    const desc=r.querySelector('.idesc').value;
+    const status=r.querySelector('.ist2').value;
+    if(amt>0) invs.push({no,amt,desc,status});
+  });
+
+  if(!invs.length){toast('Add at least one invoice','⚠');return;}
+
+  const rows=[];
+  let tot=0;
+  invs.forEach(inv=>{rows.push({account:`${lc.vendor} — Payable (${inv.no||'Inv'})`,code:'2110',dr:inv.amt,cr:0});tot+=inv.amt;});
+  rows.push({account:pa.l,code:pa.c,dr:0,cr:tot});
+
+  const payLabel=pay==='lc'?'Paid by LC':pay==='bank'?'Paid via Bank':'Paid via Loan';
+  const g=mkG(lcNo,'invoice',`INV-${String(seq).padStart(2,'0')}`,
+    `Invoice Settlement — ${payLabel}`,
+    `${invs.length} invoice(s) | ${payLabel}`,
+    new Date().toISOString().slice(0,10),rows,{invoices:invs});
+
+  S.entries.push(g);
+  markDots();refreshSidebar();
+  toast(`Invoice entries generated for ${lcNo}`,'🧾');
+  setTimeout(()=>showView('entries'),500);
+}
+
+// ═══ GEN: ADDITIONAL FEES ════════════════════════════
+function genAddlFees(){
+  const lcNo=document.getElementById('af_lc').value;
+  if(!lcNo||!S.lcs[lcNo]){toast('Select an LC','⚠');return;}
+  const lc=S.lcs[lcNo];
+  const seq=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='addl').length+1;
+
+  const{rows}=collectFees('afWrap',lc.bank);
+  if(!rows.length){toast('Add at least one fee','⚠');return;}
+
+  S.entries.push(mkG(lcNo,'addl',`AF-${String(seq).padStart(2,'0')}`,
+    'Additional Fees (Mid-Lifecycle)',
+    `Extra bank charges for LC ${lcNo}`,
+    new Date().toISOString().slice(0,10),rows));
+
+  markDots();refreshSidebar();
+  toast(`Additional fee entries generated for ${lcNo}`,'💳');
+  setTimeout(()=>showView('entries'),500);
+}
+
+// ═══ GEN: CLOSING ════════════════════════════════════
+function genClosing(){
+  const lcNo=document.getElementById('cl_lc').value;
+  if(!lcNo||!S.lcs[lcNo]){toast('Select an LC','⚠');return;}
+  const lc=S.lcs[lcNo];
+  const pay=document.getElementById('cl_pay').value;
+  const marginRel=parseFloat(document.getElementById('cl_margin').value)||0;
+  const costSheet=document.getElementById('cl_cost').value;
+  const PL={bank:lc.bank+' — Bank Account',loan:'Loan Account',other:'Other Account'};
+  const PC={bank:'1110',loan:'2510',other:'1199'};
+
+  const groups=[];
+
+  if(marginRel>0){
+    groups.push(mkG(lcNo,'closing','CL-01','Cash Margin Release',
+      `Release deposit for LC ${lcNo}`,
+      new Date().toISOString().slice(0,10),[
+        {account:lc.bank+' — Bank Account',code:'1110',dr:marginRel,cr:0},
+        {account:'LC Cash Margin Deposit',code:'1150',dr:0,cr:marginRel},
+      ]));
+  }
+
+  const defLines=[];
+  document.querySelectorAll('#defWrap .dr').forEach(r=>{
+    const type=r.querySelector('.dtype').value;
+    const amt=parseFloat(r.querySelector('.damt').value)||0;
+    if(amt>0) defLines.push({type,amt});
+  });
+
+  if(defLines.length>0){
+    const rows=[];let tot=0;
+    defLines.forEach(d=>{const m=DT[d.type]||{l:d.type,c:'1729'};rows.push({account:m.l,code:m.c,dr:d.amt,cr:0});tot+=d.amt;});
+    rows.push({account:lc.bank+' — Bank Account',code:'1110',dr:0,cr:tot});
+    groups.push(mkG(lcNo,'closing','CL-02','Deferred Charges',`Deferred costs for LC ${lcNo}`,new Date().toISOString().slice(0,10),rows));
+  }
+
+  if(costSheet==='yes'){
+    const all=[
+      ...S.entries.filter(g=>g.lcNo===lcNo&&['issuance','addl'].includes(g.stage)).flatMap(g=>g.rows.filter(r=>r.dr>0&&r.code!=='2310')),
+    ];
+    const defTotal=defLines.reduce((s,d)=>s+d.amt,0);
+    const tt=all.reduce((s,r)=>s+r.dr,0)+defTotal;
+    if(tt>0){
+      groups.push(mkG(lcNo,'closing','CL-03','Cost Sheet Allocation',
+        `Allocate LC costs to Project ${lc.proj||lcNo}`,
+        new Date().toISOString().slice(0,10),[
+          {account:`Project Cost — ${lc.proj||lcNo}`,code:'5110',dr:tt,cr:0},
+          {account:'LC Expense Account',code:'6200',dr:0,cr:tt},
+        ]));
+    }
+  }
+
+  if(!groups.length){toast('Nothing to generate. Add margin or deferred charges.','⚠');return;}
+
+  replaceStage(lcNo,'closing',groups);
+  S.lcs[lcNo].status='closed';
+  markDots();refreshSidebar();refreshSelects();
+  toast(`LC ${lcNo} closed successfully`,'🔒');
+  setTimeout(()=>showView('entries'),500);
+}
+
+// ═══ RENDER ENTRIES ══════════════════════════════════
+const STAGE_BC={issuance:'ba',invoice:'',addl:'bs',closing:'bt'};
+const STAGE_PC={issuance:'p-amber',invoice:'p-violet',addl:'p-sky',closing:'p-teal'};
+
+function renderEntries(){
+  const out=document.getElementById('entriesOut');
+  let groups=S.entries;
+  if(S.tab!=='all') groups=groups.filter(g=>g.stage===S.tab);
+
+  if(!groups.length){
+    out.innerHTML=`<div class="empty"><div class="ei">📋</div><div class="et">No entries yet</div><div class="es">Generate issuance, invoice, or closing entries first</div></div>`;
+    return;
+  }
+
+  const byLC={};
+  groups.forEach(g=>{if(!byLC[g.lcNo]) byLC[g.lcNo]=[];byLC[g.lcNo].push(g);});
+
+  let tDR=0,tCR=0;
+  groups.forEach(g=>g.rows.forEach(r=>{tDR+=r.dr;tCR+=r.cr;}));
+  const bal=Math.abs(tDR-tCR)<0.005;
+  const lcCount=Object.keys(byLC).length;
+
+  let html=`<div class="sgrid">
+    <div class="sc"><div class="sc-l">LCs</div><div class="sc-v">${lcCount}</div></div>
+    <div class="sc"><div class="sc-l">Journal Groups</div><div class="sc-v">${groups.length}</div></div>
+    <div class="sc"><div class="sc-l">Total Debit</div><div class="sc-v" style="color:var(--rose)">${fmt(tDR)}</div></div>
+    <div class="sc"><div class="sc-l">Total Credit</div><div class="sc-v" style="color:var(--teal)">${fmt(tCR)}</div></div>
+  </div>`;
+
+  Object.entries(byLC).forEach(([lcNo,lcGs])=>{
+    const lc=S.lcs[lcNo]||{};
+    let lDR=0,lCR=0;
+    lcGs.forEach(g=>g.rows.forEach(r=>{lDR+=r.dr;lCR+=r.cr;}));
+    const lOk=Math.abs(lDR-lCR)<0.005;
+
+    html+=`<div style="margin-bottom:26px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:18px">${lcNo}</span>
+        <span class="mc">${lc.vendor||'—'}</span>
+        ${lc.bank?`<span class="mc">${lc.bank}</span>`:''}
+        ${lc.proj?`<span class="mc">Proj: ${lc.proj}</span>`:''}
+        ${lc.issDate?`<span class="mc">${lc.issDate}</span>`:''}
+        <span class="${lOk?'bok':'bfail'}" style="margin-left:auto">${lOk?'✓ Balanced':'⚠ Unbalanced'}</span>
+      </div>`;
+
+    lcGs.forEach(g=>{
+      let gDR=0,gCR=0;
+      g.rows.forEach(r=>{gDR+=r.dr;gCR+=r.cr;});
+      const bc=STAGE_BC[g.stage]||'';
+      const pc=STAGE_PC[g.stage]||'p-violet';
+
+      html+=`<div class="jw">
+        <div class="jhd">
+          <span class="jbadge ${bc}">${g.badge}</span>
+          <span class="jt">${g.title}</span>
+          <span style="font-size:10px;color:var(--muted2);font-family:'JetBrains Mono',monospace">${g.date||''}</span>
+          <span class="jn">${g.note}</span>
+          <span class="pill ${pc}" style="padding:2px 8px;font-size:10px">${g.stage}</span>
+        </div>`;
+
+      if(g.invoices&&g.invoices.length>0){
+        html+=`<div style="padding:7px 13px;background:var(--violet-bg);border:1.5px solid var(--violet-bdr);border-top:none;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:.5px">Invoices:</span>
+          ${g.invoices.map(inv=>`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ink2)">
+            <strong>${inv.no||'—'}</strong> · ${fmt(inv.amt)} SAR · <span class="ist ${inv.status==='lc-paid'?'lcp':inv.status==='paid'?'paid':'unp'}">${inv.status}</span>
+          </span>`).join('')}
+        </div>`;
+      }
+
+      html+=`<table class="jet">
+        <thead><tr>
+          <th style="width:70px">Code</th><th>Account Name</th>
+          <th style="width:44px">Type</th><th style="width:130px">Debit (DR)</th><th style="width:130px">Credit (CR)</th>
+        </tr></thead><tbody>`;
+      g.rows.forEach(r=>{
+        html+=`<tr>
+          <td><span class="ac">${r.code}</span></td>
+          <td><span class="an">${r.account}</span></td>
+          <td>${r.dr>0?'<span class="dr-t">DR</span>':'<span class="cr-t">CR</span>'}</td>
+          <td>${r.dr>0?`<span class="a-dr">${fmt(r.dr)}</span>`:'<span class="a-dash">—</span>'}</td>
+          <td>${r.cr>0?`<span class="a-cr">${fmt(r.cr)}</span>`:'<span class="a-dash">—</span>'}</td>
+        </tr>`;
+      });
+      html+=`</tbody><tfoot><tr>
+        <td colspan="3" style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px">Subtotal</td>
+        <td><span class="a-dr">${fmt(gDR)}</span></td><td><span class="a-cr">${fmt(gCR)}</span></td>
+      </tr></tfoot></table></div>`;
+    });
+    html+=`</div>`;
+  });
+
+  html+=`<div style="display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:13px 0;border-top:1.5px solid var(--border)">
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Grand Total</span>
+    <span class="mc">DR: <span class="a-dr">${fmt(tDR)}</span></span>
+    <span class="mc">CR: <span class="a-cr">${fmt(tCR)}</span></span>
+    <span class="${bal?'bok':'bfail'}">${bal?'✓ All Balanced':'⚠ Check Entries'}</span>
+  </div>`;
+
+  out.innerHTML=html;
+}
+
+// ═══ EXPORT CSV ══════════════════════════════════════
+function exportCSV(){
+  if(!S.entries.length){toast('No entries to export','⚠');return;}
+  let csv='LC No,Badge,Stage,Title,Date,Code,Account,Debit,Credit\n';
+  S.entries.forEach(g=>g.rows.forEach(r=>{
+    csv+=`"${g.lcNo}","${g.badge}","${g.stage}","${g.title}","${g.date||''}","${r.code}","${r.account}",${r.dr>0?r.dr.toFixed(2):''},${r.cr>0?r.cr.toFixed(2):''}\n`;
+  }));
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='lc_journal_entries.csv';a.click();
+  toast('CSV exported','⬇');
+}
+
+// ═══ RESET ════════════════════════════════════════════
+function resetIssuance(){
+  ['i_proj','i_lcno','i_bank','i_vendor','i_notes','i_iss','i_exp'].forEach(id=>document.getElementById(id).value='');
+  ['i_val','i_mPct','i_mAmt'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('feesWrap').innerHTML='';
+  recalcF('feesWrap','fExVat','fVAT','fTotal');
+  showView('issuance');
+}
+
+// ═══ INIT ════════════════════════════════════════════
+addFeeRow('feesWrap','fExVat','fVAT','fTotal');
+addInvRow();
+addDefRow();
+addFeeRow('afWrap','afExVat','afVAT','afTotal');
+</script>
+
+<!-- Signature -->
+<div class="signature">
+  <span class="sig-line1">Created by Mostafa Salaheldin</span>
+  <span class="sig-line2">with assistance of AI</span>
+</div>
+
+</body>
+</html>
