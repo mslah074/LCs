@@ -422,6 +422,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       <button class="nb" onclick="openSaveModal()"><span class="ni">💾</span>Save Version<span class="nd" id="d-ver"></span></button>
       <button class="nb" onclick="openVersionsModal()"><span class="ni">🕒</span>Saved Versions</button>
       <button class="nb" onclick="openExcelModal()"><span class="ni">📥</span>Export Excel</button>
+      <button class="nb" onclick="openAmendModal()"><span class="ni">💰</span>Margin Amendment</button>
       <button class="nb" onclick="resetAll()" style="color:var(--rose)"><span class="ni" style="background:var(--rose-bg)">🗑</span>Reset All Data</button>
       <button class="dm-toggle" onclick="toggleDark()" id="dmBtn">
         <span class="ni" style="background:none;border:none">🌙</span>
@@ -663,8 +664,8 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
     <div style="overflow-x:auto">
       <table class="lc-table" id="dashTable">
         <thead><tr>
-          <th>LC Number</th><th>Vendor</th><th>Bank</th><th>Project</th>
-          <th>Value</th><th>Margin</th><th>Issuance</th><th>Expiry</th><th>Status</th>
+          <th>LC Number</th><th>PO Number</th><th>Vendor</th><th>Bank</th><th>Project</th>
+          <th>Value</th><th>Margin</th><th>Payment Term</th><th>Partial</th><th>Issuance</th><th>Expiry</th><th>Status</th>
         </tr></thead>
         <tbody id="dashTbody"></tbody>
       </table>
@@ -804,25 +805,44 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
 <div class="modal-bg" id="modal-amend">
   <div class="modal">
     <div class="modal-hd">
-      <div class="modal-title">💰 Margin Amendment</div>
+      <div class="modal-title">💰 LC Value Amendment</div>
       <button class="modal-close" onclick="closeModal('modal-amend')">×</button>
     </div>
     <div class="grid g1" style="gap:12px;margin-bottom:16px">
       <div class="field"><label>Select LC</label>
-        <select id="am_lc" onchange="calcAmendDiff()">
+        <select id="am_lc" onchange="onAmendLC()">
           <option value="">— Select an open LC —</option>
         </select>
       </div>
-      <div class="field"><label>New Cash Margin Amount (SAR)</label>
-        <input id="am_new" type="number" placeholder="0.00" step="0.01" oninput="calcAmendDiff()">
-      </div>
-      <div class="field"><label>Note</label>
-        <input id="am_note" type="text" placeholder="Reason for amendment">
+    </div>
+    <!-- Info row - shown after LC selected -->
+    <div id="am_info" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:3px">Current LC Value</div>
+          <div id="am_cur_val" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--ink)">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:3px">Margin %</div>
+          <div id="am_cur_pct" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--amber)">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:3px">Current Margin</div>
+          <div id="am_cur_mar" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--teal)">—</div></div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);margin-bottom:16px">
-      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Difference</span>
-      <span id="am_diff" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin-left:auto">—</span>
+    <div class="grid g2" style="gap:12px;margin-bottom:14px">
+      <div class="field"><label>New LC Value (SAR)</label>
+        <input id="am_new_val" type="number" placeholder="0.00" step="0.01" oninput="calcAmendDiff()">
+      </div>
+      <div class="field"><label>Amendment Note</label>
+        <input id="am_note" type="text" placeholder="e.g. Partial shipment #2">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:28px;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);margin-bottom:16px">
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:2px">New Margin</div>
+        <div id="am_new_mar" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--ink)">—</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:2px">Margin Difference</div>
+        <div id="am_diff" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700">—</div>
+      </div>
     </div>
     <div class="btn-row" style="margin-top:0">
       <button class="btn b-ghost" onclick="closeModal('modal-amend')">Cancel</button>
@@ -846,6 +866,7 @@ function showView(v){
   if(nb) nb.classList.add('on');
   if(v==='entries') renderEntries();
   if(v==='dashboard') renderDashboard();
+  if(v==='bills-dashboard') initBillsDashboard();
   if(['invoices','fees','closing'].includes(v)) refreshSelects();
 }
 
@@ -875,12 +896,13 @@ function calcMargin(){
 
 // ═══ FEE ROWS ════════════════════════════════════════
 const FT={
-  issuance:{l:'LC Issuance Fee',c:'6210'},
-  postal:  {l:'Postal / Courier Charges',c:'6215'},
-  swift:   {l:'SWIFT / Telex Charges',c:'6220'},
-  vat:     {l:'VAT on Purchase (manual)',c:'2310'},
-  amend:   {l:'Amendment Fee',c:'6225'},
-  other:   {l:'Other Bank Charges',c:'6299'},
+  issuance:    {l:'LC Issuance Fee',          c:'6210', grp:'bank'},
+  postal:      {l:'Postal / Courier Charges', c:'6215', grp:'bank'},
+  swift:       {l:'SWIFT / Telex Charges',    c:'6220', grp:'bank'},
+  amend:       {l:'Amendment Fee',            c:'6225', grp:'bank'},
+  def_comm:    {l:'Deferred Commission Expense', c:'6226', grp:'bank'},
+  other:       {l:'Other Bank Charges',       c:'6299', grp:'bank'},
+  vat:         {l:'VAT on Purchase (manual)', c:'2310', grp:'vat'},
 };
 const ftOpts=()=>Object.entries(FT).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join('');
 
@@ -905,7 +927,8 @@ function recalcF(wid,exId,vatId,totId){
   document.querySelectorAll(`#${wid} .dr`).forEach(r=>{
     const t=r.querySelector('.ftype').value;
     const a=parseFloat(r.querySelector('.famt').value)||0;
-    if(t==='vat') mv+=a; else ex+=a;
+    const grp=(FT[t]||{}).grp||'bank';
+    if(grp==='vat') mv+=a; else ex+=a;
   });
   const av=mv>0?mv:ex*0.15;
   document.getElementById(exId).textContent=fmt(ex);
@@ -920,8 +943,8 @@ function collectFees(wid,bank){
     const t=r.querySelector('.ftype').value;
     const a=parseFloat(r.querySelector('.famt').value)||0;
     if(a<=0) return;
-    const m=FT[t]||{l:t,c:'6299'};
-    if(t==='vat') mv+=a;
+    const m=FT[t]||{l:t,c:'6299',grp:'bank'};
+    if(m.grp==='vat') mv+=a;
     else{rows.push({account:m.l,code:m.c,dr:a,cr:0});ex+=a;}
   });
   const vat=mv>0?mv:(ex>0?ex*0.15:0);
@@ -1010,14 +1033,18 @@ function lcBar(lcNo){
   const lc=S.lcs[lcNo];
   const nInv=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='invoice').length;
   const nAF=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='addl').length;
+  const nBills=(lc.bills||[]).length;
   return `<div class="lc-bar">
     <span class="lc-num">${lc.lcNo}</span>
+    ${lc.poNo?`<span class="mi">PO: <strong>${lc.poNo}</strong></span>`:''}
     <span class="mi"><strong>${lc.vendor||'—'}</strong></span>
     <span class="mi">Bank: <strong>${lc.bank||'—'}</strong></span>
     <span class="mi">Value: <strong>${fmt(lc.lcValue)} ${lc.currency}</strong></span>
     <span class="mi">Margin: <strong>${fmt(lc.marginAmt)} SAR</strong></span>
+    ${lc.payTerm?`<span class="mi">Terms: <strong>${lc.payTerm}</strong></span>`:''}
+    ${lc.partial?`<span class="mi">Partial Shipment: <strong>${lc.partial}</strong></span>`:''}
+    ${nBills?`<span class="mi">Saved Bills: <strong>${nBills}</strong></span>`:''}
     <span class="mi">Bill JEs: <strong>${nInv}</strong></span>
-    <span class="mi">Addl Fee JEs: <strong>${nAF}</strong></span>
     <span class="pill ${lc.status==='closed'?'p-teal':'p-amber'}" style="margin-left:auto">${lc.status.toUpperCase()}</span>
   </div>`;
 }
@@ -1387,23 +1414,46 @@ function saveBillsDraft(){
 
 // ═══ MARGIN AMENDMENT ════════════════════════════════
 function openAmendModal(){
-  refreshSelects();
-  // populate amend LC select
   const sel=document.getElementById('am_lc');
   const keys=Object.keys(S.lcs).filter(k=>S.lcs[k].status==='open');
   sel.innerHTML='<option value="">— Select an open LC —</option>'+
     keys.map(k=>`<option value="${k}">${k} — ${S.lcs[k].vendor||'N/A'}</option>`).join('');
-  document.getElementById('am_new').value='';
+  document.getElementById('am_new_val').value='';
+  document.getElementById('am_note').value='';
   document.getElementById('am_diff').textContent='—';
+  document.getElementById('am_new_mar').textContent='—';
+  document.getElementById('am_info').style.display='none';
   openModal('modal-amend');
+}
+
+function onAmendLC(){
+  const lcNo=document.getElementById('am_lc').value;
+  const info=document.getElementById('am_info');
+  if(!lcNo||!S.lcs[lcNo]){info.style.display='none';return;}
+  const lc=S.lcs[lcNo];
+  const pct=lc.lcValue>0?((lc.marginAmt/lc.lcValue)*100).toFixed(2):0;
+  document.getElementById('am_cur_val').textContent=fmt(lc.lcValue)+' '+lc.currency;
+  document.getElementById('am_cur_pct').textContent=pct+'%';
+  document.getElementById('am_cur_mar').textContent=fmt(lc.marginAmt)+' SAR';
+  info.style.display='block';
+  document.getElementById('am_new_val').value='';
+  document.getElementById('am_diff').textContent='—';
+  document.getElementById('am_new_mar').textContent='—';
 }
 
 function calcAmendDiff(){
   const lcNo=document.getElementById('am_lc').value;
-  const newAmt=parseFloat(document.getElementById('am_new').value)||0;
-  if(!lcNo||!S.lcs[lcNo]||newAmt<=0){document.getElementById('am_diff').textContent='—';return;}
-  const old=S.lcs[lcNo].marginAmt||0;
-  const diff=newAmt-old;
+  const newVal=parseFloat(document.getElementById('am_new_val').value)||0;
+  if(!lcNo||!S.lcs[lcNo]||newVal<=0){
+    document.getElementById('am_diff').textContent='—';
+    document.getElementById('am_new_mar').textContent='—';
+    return;
+  }
+  const lc=S.lcs[lcNo];
+  const pct=lc.lcValue>0?(lc.marginAmt/lc.lcValue):0;
+  const newMar=newVal*pct;
+  const diff=newMar-lc.marginAmt;
+  document.getElementById('am_new_mar').textContent=fmt(newMar)+' SAR';
   const el=document.getElementById('am_diff');
   el.textContent=(diff>=0?'+ ':'')+fmt(diff)+' SAR';
   el.style.color=diff>0?'var(--rose)':diff<0?'var(--teal)':'var(--muted)';
@@ -1411,37 +1461,42 @@ function calcAmendDiff(){
 
 function genAmendment(){
   const lcNo=document.getElementById('am_lc').value;
-  const newAmt=parseFloat(document.getElementById('am_new').value)||0;
-  const note=document.getElementById('am_note').value.trim()||'Margin amendment';
+  const newVal=parseFloat(document.getElementById('am_new_val').value)||0;
+  const note=document.getElementById('am_note').value.trim()||'LC Value Amendment';
   if(!lcNo||!S.lcs[lcNo]){toast('Select an LC','⚠');return;}
-  if(newAmt<=0){toast('Enter new margin amount','⚠');return;}
+  if(newVal<=0){toast('Enter new LC Value','⚠');return;}
   const lc=S.lcs[lcNo];
-  const old=lc.marginAmt||0;
-  const diff=newAmt-old;
-  if(Math.abs(diff)<0.01){toast('No change in margin amount','⚠');return;}
+  const pct=lc.lcValue>0?(lc.marginAmt/lc.lcValue):0;
+  const newMar=newVal*pct;
+  const diff=newMar-lc.marginAmt;
+  if(Math.abs(diff)<0.01&&Math.abs(newVal-lc.lcValue)<0.01){toast('No change detected','⚠');return;}
   const date=new Date().toISOString().slice(0,10);
-  const seq=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='issuance'&&g.badge.startsWith('AM')).length+1;
+  const seq=S.entries.filter(g=>g.lcNo===lcNo&&g.badge.startsWith('AM')).length+1;
   let rows;
   if(diff>0){
-    // Additional deposit
     rows=[
-      {account:'LC Cash Margin Deposit',code:'1150',dr:diff,cr:0},
-      {account:lc.bank+' — Bank Account',code:'1110',dr:0,cr:diff},
+      {account:'LC Cash Margin Deposit',      code:'1150',dr:diff,cr:0},
+      {account:lc.bank+' — Bank Account',     code:'1110',dr:0,cr:diff},
+    ];
+  } else if(diff<0){
+    rows=[
+      {account:lc.bank+' — Bank Account',     code:'1110',dr:Math.abs(diff),cr:0},
+      {account:'LC Cash Margin Deposit',       code:'1150',dr:0,cr:Math.abs(diff)},
     ];
   } else {
-    // Partial release
-    rows=[
-      {account:lc.bank+' — Bank Account',code:'1110',dr:Math.abs(diff),cr:0},
-      {account:'LC Cash Margin Deposit',code:'1150',dr:0,cr:Math.abs(diff)},
-    ];
+    // LC value changed but margin % rounds to same — still record the LC value update
+    rows=[{account:'LC Value Amendment — No margin change',code:'MEMO',dr:0,cr:0}];
   }
   S.entries.push(mkG(lcNo,'issuance',`AM-${String(seq).padStart(2,'0')}`,
-    diff>0?'Cash Margin Increase':'Cash Margin Partial Release',
-    note, date, rows));
-  S.lcs[lcNo].marginAmt=newAmt;
+    diff>0?'Cash Margin Top-Up (LC Amendment)':diff<0?'Cash Margin Reduction (LC Amendment)':'LC Value Amendment (Memo)',
+    `${note} | LC: ${fmt(lc.lcValue)}→${fmt(newVal)} | Margin: ${fmt(lc.marginAmt)}→${fmt(newMar)} SAR`,
+    date, rows));
+  // Update LC record
+  S.lcs[lcNo].lcValue=newVal;
+  S.lcs[lcNo].marginAmt=newMar;
   closeModal('modal-amend');
   markDots();refreshSidebar();
-  toast(`Margin amended: ${fmt(old)} → ${fmt(newAmt)} SAR`,'💰');
+  toast(`LC amended: Value ${fmt(lc.lcValue)}→${fmt(newVal)} | Margin diff: ${fmt(diff)} SAR`,'💰');
   setTimeout(()=>showView('entries'),400);
 }
 
@@ -1686,15 +1741,18 @@ function renderDashboard(){
         const expClass=diff===null?'':(diff<0?'color:var(--rose);font-weight:700':diff<=30?'color:var(--amber);font-weight:700':'color:var(--teal)');
         return `<tr>
           <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal)">${lc.lcNo}</span></td>
+          <td>${lc.poNo||'—'}</td>
           <td>${lc.vendor||'—'}</td><td>${lc.bank||'—'}</td><td>${lc.proj||'—'}</td>
           <td style="font-family:'JetBrains Mono',monospace">${fmt(lc.lcValue)} ${lc.currency||''}</td>
           <td style="font-family:'JetBrains Mono',monospace">${fmt(lc.marginAmt)}</td>
+          <td>${lc.payTerm||'—'}</td>
+          <td>${lc.partial||'—'}</td>
           <td>${lc.issDate||'—'}</td>
           <td style="${expClass}">${lc.expDate||'—'}${diff!==null&&diff<0?' ⚠':diff!==null&&diff<=30?' ⏰':''}</td>
           <td><span class="pill ${lc.status==='closed'?'p-teal':'p-amber'}" style="padding:2px 8px;font-size:10px">${lc.status.toUpperCase()}</span></td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">No LCs yet</td></tr>';
+    : '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:30px">No LCs yet</td></tr>';
 }
 
 // ═══ EXCEL EXPORT ════════════════════════════════════
