@@ -404,7 +404,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
     <div class="nav-group">
       <div class="nav-gl">Workflows</div>
       <button class="nb on" id="nb-issuance"  onclick="showView('issuance')"><span class="ni">🏦</span>New Issuance<span class="nd"></span></button>
-      <button class="nb" id="nb-invoices"     onclick="showView('invoices')"><span class="ni">🧾</span>Invoices<span class="nd" id="d-inv"></span></button>
+      <button class="nb" id="nb-invoices" onclick="showView('invoices')"><span class="ni">🧾</span>Bills<span class="nd" id="d-inv"></span></button>
       <button class="nb" id="nb-fees"         onclick="showView('fees')"><span class="ni">💳</span>Additional Fees<span class="nd" id="d-fees"></span></button>
       <button class="nb" id="nb-closing"      onclick="showView('closing')"><span class="ni">🔒</span>Close LC<span class="nd" id="d-cl"></span></button>
       <button class="nb" id="nb-entries"      onclick="showView('entries')"><span class="ni">📋</span>Journal Entries<span class="nd" id="d-ent"></span></button>
@@ -445,6 +445,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   <div class="card a-amber">
     <div class="chd"><span class="cico">📄</span>LC Master Data</div>
     <div class="grid g3">
+      <div class="field"><label>PO Number</label><input id="i_po" type="text" placeholder="PO-2024-001"></div>
       <div class="field"><label>Project No.</label><input id="i_proj" type="text" placeholder="PRJ-2024-001"></div>
       <div class="field"><label>LC Number</label><input id="i_lcno" type="text" placeholder="LC-2024-001"></div>
       <div class="field"><label>LC Value</label><input id="i_val" type="number" placeholder="0.00" step="0.01" oninput="calcMargin()"></div>
@@ -456,6 +457,10 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       <div class="field"><label>Issuance Date</label><input id="i_iss" type="date"></div>
       <div class="field"><label>Expiry Date</label><input id="i_exp" type="date"></div>
       <div class="field"><label>Cash Margin %</label><input id="i_mPct" type="number" placeholder="10" step="0.01" oninput="calcMargin()"></div>
+      <div class="field"><label>Payment Term</label><input id="i_payterm" type="text" placeholder="e.g. 90 days from B/L date"></div>
+      <div class="field"><label>Partial Shipment</label>
+        <select id="i_partial"><option value="Allowed">Allowed</option><option value="Not Allowed">Not Allowed</option></select>
+      </div>
     </div>
     <div class="grid g2" style="margin-top:13px">
       <div class="field"><label>Cash Margin SAR (auto)</label><input id="i_mAmt" type="number" readonly placeholder="0.00"></div>
@@ -484,15 +489,18 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
 <!-- ── INVOICES (mid-lifecycle) ── -->
 <div class="view" id="view-invoices">
   <div class="topbar">
-    <div><div class="pt">Invoices <em>Mid-Lifecycle</em></div><div class="pd">Attach invoices to an open LC · generate payment entries · mark as Paid by LC</div></div>
-    <span class="pill p-violet">⬤ Invoices</span>
+    <div><div class="pt">Bills <em>Mid-Lifecycle</em></div><div class="pd">Add & save bills · generate payment journal entries</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn b-ghost btn-sm" onclick="showView('bills-dashboard')">📊 Bills Dashboard</button>
+      <span class="pill p-violet">⬤ Bills</span>
+    </div>
   </div>
 
   <div class="card">
     <div class="chd"><span class="cico">🔗</span>Select LC</div>
     <div class="grid g2">
       <div class="field"><label>LC Number</label>
-        <select id="inv_lc" onchange="onSel('inv_lc','inv_bar')">
+        <select id="inv_lc" onchange="onSel('inv_lc','bill_bar')">
           <option value="">— Select an open LC —</option>
         </select>
       </div>
@@ -505,20 +513,21 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       </div>
     </div>
   </div>
-  <div id="inv_bar"></div>
+  <div id="bill_bar"></div>
 
   <div class="card a-violet">
-    <div class="chd"><span class="cico">🧾</span>Invoice Lines</div>
+    <div class="chd"><span class="cico">🧾</span>Bill Lines</div>
     <div id="invWrap"></div>
-    <button class="add-btn" onclick="addInvRow()">＋ Add invoice</button>
+    <button class="add-btn" onclick="addInvRow()">＋ Add bill</button>
     <div class="totbox">
-      <div><div class="tl">Invoice Total</div><div class="tv tv-violet" id="invTotal">0.00</div></div>
+      <div><div class="tl">Bill Total</div><div class="tv tv-violet" id="invTotal">0.00</div></div>
     </div>
   </div>
 
   <div class="btn-row">
-    <button class="btn b-ghost" onclick="quickSave('Invoices')">💾 Save</button>
-    <button class="btn b-violet" onclick="genInvoices()">📎 Generate Invoice Journal Entries</button>
+    <button class="btn b-ghost" onclick="saveBillsDraft()">📁 Save Bills (Draft)</button>
+    <button class="btn b-ghost" onclick="quickSave('Bills')">💾 Save Version</button>
+    <button class="btn b-violet" onclick="genInvoices()">📎 Generate Bill Journal Entries</button>
   </div>
 </div>
 
@@ -633,7 +642,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
   <div class="tabs">
     <button class="tab on" onclick="setTab('all')"      id="t-all">All</button>
     <button class="tab"    onclick="setTab('issuance')" id="t-issuance">Issuance</button>
-    <button class="tab"    onclick="setTab('invoice')"  id="t-invoice">Invoices</button>
+    <button class="tab"    onclick="setTab('invoice')"  id="t-invoice">Bills</button>
     <button class="tab"    onclick="setTab('addl')"     id="t-addl">Addl Fees</button>
     <button class="tab"    onclick="setTab('closing')"  id="t-closing">Closing</button>
   </div>
@@ -658,6 +667,44 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
           <th>Value</th><th>Margin</th><th>Issuance</th><th>Expiry</th><th>Status</th>
         </tr></thead>
         <tbody id="dashTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── BILLS DASHBOARD ── -->
+<div class="view" id="view-bills-dashboard">
+  <div class="topbar">
+    <div><div class="pt">Bills <em>Dashboard</em></div><div class="pd">All bills across LCs — filter, track status and payment dates</div></div>
+    <button class="btn b-ghost btn-sm" onclick="showView('invoices')">← Back to Bills</button>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div class="field" style="min-width:180px"><label>Filter by LC</label>
+        <select id="bd_lc" onchange="renderBillsDashboard()">
+          <option value="all">All LCs</option>
+        </select>
+      </div>
+      <div class="field" style="min-width:150px"><label>Status</label>
+        <select id="bd_status" onchange="renderBillsDashboard()">
+          <option value="all">All Statuses</option>
+          <option value="lc-paid">Paid by LC</option>
+          <option value="paid">Paid (Other)</option>
+          <option value="unpaid">Unpaid</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="dash-grid" id="bd_stats" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="card">
+    <div class="chd"><span class="cico">🧾</span>Bills List</div>
+    <div style="overflow-x:auto">
+      <table class="lc-table">
+        <thead><tr>
+          <th>Bill No.</th><th>LC No.</th><th>Vendor</th><th>Project</th>
+          <th>Description</th><th>Amount (SAR)</th><th>Sign Date</th><th>Payment Date</th><th>Status</th>
+        </tr></thead>
+        <tbody id="bd_tbody"></tbody>
       </table>
     </div>
   </div>
@@ -749,6 +796,37 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
     <div class="btn-row" style="margin-top:8px">
       <button class="btn b-ghost" onclick="closeModal('modal-excel')">Cancel</button>
       <button class="btn b-teal" onclick="doExcelExport()">⬇ Export Excel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARGIN AMENDMENT MODAL -->
+<div class="modal-bg" id="modal-amend">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">💰 Margin Amendment</div>
+      <button class="modal-close" onclick="closeModal('modal-amend')">×</button>
+    </div>
+    <div class="grid g1" style="gap:12px;margin-bottom:16px">
+      <div class="field"><label>Select LC</label>
+        <select id="am_lc" onchange="calcAmendDiff()">
+          <option value="">— Select an open LC —</option>
+        </select>
+      </div>
+      <div class="field"><label>New Cash Margin Amount (SAR)</label>
+        <input id="am_new" type="number" placeholder="0.00" step="0.01" oninput="calcAmendDiff()">
+      </div>
+      <div class="field"><label>Note</label>
+        <input id="am_note" type="text" placeholder="Reason for amendment">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);margin-bottom:16px">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Difference</span>
+      <span id="am_diff" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin-left:auto">—</span>
+    </div>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn b-ghost" onclick="closeModal('modal-amend')">Cancel</button>
+      <button class="btn b-teal" onclick="genAmendment()">⚡ Generate Amendment Entry</button>
     </div>
   </div>
 </div>
@@ -853,15 +931,18 @@ function collectFees(wid,bank){
   return{rows,total};
 }
 
-// ═══ INVOICE ROWS ════════════════════════════════════
+// ═══ BILL ROWS ════════════════════════════════════
 function addInvRow(){
   const w=document.getElementById('invWrap');
   const r=document.createElement('div');
-  r.className='dr dr5';
+  r.className='dr';
+  r.style.cssText='display:grid;gap:10px;align-items:end;grid-template-columns:1fr 1.4fr 1fr 1fr 1fr 1fr auto;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);padding:11px 13px;margin-bottom:8px;transition:border-color .15s;';
   r.innerHTML=`
-    <div class="field"><label>Invoice No.</label><input type="text" class="ino" placeholder="INV-001"></div>
+    <div class="field"><label>Bill No.</label><input type="text" class="ino" placeholder="BILL-001"></div>
     <div class="field"><label>Description</label><input type="text" class="idesc" placeholder="Goods / Services"></div>
     <div class="field"><label>Amount (SAR)</label><input type="number" class="iamt" placeholder="0.00" step="0.01" oninput="recalcInv()"></div>
+    <div class="field"><label>Sign Date</label><input type="date" class="isign"></div>
+    <div class="field"><label>Payment Date</label><input type="date" class="ipaydate"></div>
     <div class="field"><label>Status</label>
       <select class="ist2">
         <option value="lc-paid">Paid by LC</option>
@@ -935,7 +1016,7 @@ function lcBar(lcNo){
     <span class="mi">Bank: <strong>${lc.bank||'—'}</strong></span>
     <span class="mi">Value: <strong>${fmt(lc.lcValue)} ${lc.currency}</strong></span>
     <span class="mi">Margin: <strong>${fmt(lc.marginAmt)} SAR</strong></span>
-    <span class="mi">Invoice JEs: <strong>${nInv}</strong></span>
+    <span class="mi">Bill JEs: <strong>${nInv}</strong></span>
     <span class="mi">Addl Fee JEs: <strong>${nAF}</strong></span>
     <span class="pill ${lc.status==='closed'?'p-teal':'p-amber'}" style="margin-left:auto">${lc.status.toUpperCase()}</span>
   </div>`;
@@ -967,7 +1048,7 @@ function quickJump(k){
   if(!lc) return;
   if(lc.status==='open'){
     showView('invoices');
-    setTimeout(()=>{document.getElementById('inv_lc').value=k;onSel('inv_lc','inv_bar');},50);
+    setTimeout(()=>{document.getElementById('inv_lc').value=k;onSel('inv_lc','bill_bar');},50);
   } else showView('entries');
 }
 
@@ -1019,7 +1100,12 @@ function genIssuance(){
 
   if(!groups.length){toast('No entries to generate','⚠');return;}
 
-  S.lcs[lcNo]={lcNo,lcValue,bank,vendor,proj,currency,issDate,expDate,marginAmt,status:'open'};
+  S.lcs[lcNo]={lcNo,lcValue,bank,vendor,proj,currency,issDate,expDate,marginAmt,status:'open',
+    poNo:document.getElementById('i_po').value.trim(),
+    payTerm:document.getElementById('i_payterm').value.trim(),
+    partial:document.getElementById('i_partial').value,
+    bills:S.lcs[lcNo]?.bills||[]
+  };
   replaceStage(lcNo,'issuance',groups);
   markDots();refreshSidebar();refreshSelects();
   toast(`Issuance entries created for ${lcNo}`,'✓');
@@ -1042,7 +1128,9 @@ function genInvoices(){
     const amt=parseFloat(r.querySelector('.iamt').value)||0;
     const desc=r.querySelector('.idesc').value;
     const status=r.querySelector('.ist2').value;
-    if(amt>0) invs.push({no,amt,desc,status});
+    const signDate=r.querySelector('.isign')?.value||'';
+    const payDate=r.querySelector('.ipaydate')?.value||'';
+    if(amt>0) invs.push({no,amt,desc,status,signDate,payDate});
   });
 
   if(!invs.length){toast('Add at least one invoice','⚠');return;}
@@ -1054,13 +1142,13 @@ function genInvoices(){
 
   const payLabel=pay==='lc'?'Paid by LC':pay==='bank'?'Paid via Bank':'Paid via Loan';
   const g=mkG(lcNo,'invoice',`INV-${String(seq).padStart(2,'0')}`,
-    `Invoice Settlement — ${payLabel}`,
-    `${invs.length} invoice(s) | ${payLabel}`,
+    `Bill Settlement — ${payLabel}`,
+    `${invs.length} bill(s) | ${payLabel}`,
     new Date().toISOString().slice(0,10),rows,{invoices:invs});
 
   S.entries.push(g);
   markDots();refreshSidebar();
-  toast(`Invoice entries generated for ${lcNo}`,'🧾');
+  toast(`Bill entries generated for ${lcNo}`,'🧾');
   setTimeout(()=>showView('entries'),500);
 }
 
@@ -1261,11 +1349,169 @@ function exportCSV(){
 
 // ═══ RESET ════════════════════════════════════════════
 function resetIssuance(){
-  ['i_proj','i_lcno','i_bank','i_vendor','i_notes','i_iss','i_exp'].forEach(id=>document.getElementById(id).value='');
+  ['i_po','i_proj','i_lcno','i_bank','i_vendor','i_notes','i_iss','i_exp','i_payterm'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   ['i_val','i_mPct','i_mAmt'].forEach(id=>document.getElementById(id).value='');
+  const ps=document.getElementById('i_partial'); if(ps) ps.value='Allowed';
   document.getElementById('feesWrap').innerHTML='';
   recalcF('feesWrap','fExVat','fVAT','fTotal');
   showView('issuance');
+}
+
+// ═══ SAVE BILLS DRAFT ════════════════════════════════
+function saveBillsDraft(){
+  const lcNo=document.getElementById('inv_lc').value;
+  if(!lcNo||!S.lcs[lcNo]){toast('Select an LC first','⚠');return;}
+  const bills=[];
+  document.querySelectorAll('#invWrap .dr').forEach(r=>{
+    const no=r.querySelector('.ino').value;
+    const amt=parseFloat(r.querySelector('.iamt').value)||0;
+    const desc=r.querySelector('.idesc').value;
+    const status=r.querySelector('.ist2').value;
+    const signDate=r.querySelector('.isign')?.value||'';
+    const payDate=r.querySelector('.ipaydate')?.value||'';
+    if(no||amt>0) bills.push({no,amt,desc,status,signDate,payDate});
+  });
+  if(!bills.length){toast('Add at least one bill','⚠');return;}
+  if(!S.lcs[lcNo].bills) S.lcs[lcNo].bills=[];
+  // Merge: add new bill nos, update existing
+  bills.forEach(b=>{
+    const idx=S.lcs[lcNo].bills.findIndex(x=>x.no===b.no&&b.no);
+    if(idx>=0) S.lcs[lcNo].bills[idx]=b;
+    else S.lcs[lcNo].bills.push(b);
+  });
+  toast(`${bills.length} bill(s) saved to ${lcNo}`,'📁');
+  markDots();
+}
+
+// ═══ MARGIN AMENDMENT ════════════════════════════════
+function openAmendModal(){
+  refreshSelects();
+  // populate amend LC select
+  const sel=document.getElementById('am_lc');
+  const keys=Object.keys(S.lcs).filter(k=>S.lcs[k].status==='open');
+  sel.innerHTML='<option value="">— Select an open LC —</option>'+
+    keys.map(k=>`<option value="${k}">${k} — ${S.lcs[k].vendor||'N/A'}</option>`).join('');
+  document.getElementById('am_new').value='';
+  document.getElementById('am_diff').textContent='—';
+  openModal('modal-amend');
+}
+
+function calcAmendDiff(){
+  const lcNo=document.getElementById('am_lc').value;
+  const newAmt=parseFloat(document.getElementById('am_new').value)||0;
+  if(!lcNo||!S.lcs[lcNo]||newAmt<=0){document.getElementById('am_diff').textContent='—';return;}
+  const old=S.lcs[lcNo].marginAmt||0;
+  const diff=newAmt-old;
+  const el=document.getElementById('am_diff');
+  el.textContent=(diff>=0?'+ ':'')+fmt(diff)+' SAR';
+  el.style.color=diff>0?'var(--rose)':diff<0?'var(--teal)':'var(--muted)';
+}
+
+function genAmendment(){
+  const lcNo=document.getElementById('am_lc').value;
+  const newAmt=parseFloat(document.getElementById('am_new').value)||0;
+  const note=document.getElementById('am_note').value.trim()||'Margin amendment';
+  if(!lcNo||!S.lcs[lcNo]){toast('Select an LC','⚠');return;}
+  if(newAmt<=0){toast('Enter new margin amount','⚠');return;}
+  const lc=S.lcs[lcNo];
+  const old=lc.marginAmt||0;
+  const diff=newAmt-old;
+  if(Math.abs(diff)<0.01){toast('No change in margin amount','⚠');return;}
+  const date=new Date().toISOString().slice(0,10);
+  const seq=S.entries.filter(g=>g.lcNo===lcNo&&g.stage==='issuance'&&g.badge.startsWith('AM')).length+1;
+  let rows;
+  if(diff>0){
+    // Additional deposit
+    rows=[
+      {account:'LC Cash Margin Deposit',code:'1150',dr:diff,cr:0},
+      {account:lc.bank+' — Bank Account',code:'1110',dr:0,cr:diff},
+    ];
+  } else {
+    // Partial release
+    rows=[
+      {account:lc.bank+' — Bank Account',code:'1110',dr:Math.abs(diff),cr:0},
+      {account:'LC Cash Margin Deposit',code:'1150',dr:0,cr:Math.abs(diff)},
+    ];
+  }
+  S.entries.push(mkG(lcNo,'issuance',`AM-${String(seq).padStart(2,'0')}`,
+    diff>0?'Cash Margin Increase':'Cash Margin Partial Release',
+    note, date, rows));
+  S.lcs[lcNo].marginAmt=newAmt;
+  closeModal('modal-amend');
+  markDots();refreshSidebar();
+  toast(`Margin amended: ${fmt(old)} → ${fmt(newAmt)} SAR`,'💰');
+  setTimeout(()=>showView('entries'),400);
+}
+
+// ═══ BILLS DASHBOARD ═════════════════════════════════
+function renderBillsDashboard(){
+  const lcFilter=document.getElementById('bd_lc')?.value||'all';
+  const statusFilter=document.getElementById('bd_status')?.value||'all';
+
+  // Collect all bills from all LCs
+  let allBills=[];
+  Object.values(S.lcs).forEach(lc=>{
+    (lc.bills||[]).forEach(b=>allBills.push({...b,lcNo:lc.lcNo,vendor:lc.vendor||'—',proj:lc.proj||'—',bank:lc.bank||'—'}));
+    // Also from journal entries invoices array
+    S.entries.filter(g=>g.lcNo===lc.lcNo&&g.stage==='invoice').forEach(g=>{
+      (g.invoices||[]).forEach(inv=>{
+        const exists=allBills.find(b=>b.no===inv.no&&b.lcNo===lc.lcNo);
+        if(!exists) allBills.push({...inv,lcNo:lc.lcNo,vendor:lc.vendor||'—',proj:lc.proj||'—',bank:lc.bank||'—',fromEntry:true});
+      });
+    });
+  });
+
+  // Remove duplicates by no+lcNo
+  const seen=new Set();
+  allBills=allBills.filter(b=>{const k=b.lcNo+'|'+b.no;if(seen.has(k))return false;seen.add(k);return true;});
+
+  if(lcFilter!=='all') allBills=allBills.filter(b=>b.lcNo===lcFilter);
+  if(statusFilter!=='all') allBills=allBills.filter(b=>b.status===statusFilter);
+
+  const total=allBills.reduce((s,b)=>s+(b.amt||0),0);
+  const paid=allBills.filter(b=>b.status==='paid'||b.status==='lc-paid').reduce((s,b)=>s+(b.amt||0),0);
+  const unpaid=allBills.filter(b=>b.status==='unpaid').reduce((s,b)=>s+(b.amt||0),0);
+  const lcPaid=allBills.filter(b=>b.status==='lc-paid').reduce((s,b)=>s+(b.amt||0),0);
+
+  const stats=document.getElementById('bd_stats');
+  if(stats) stats.innerHTML=`
+    <div class="dash-card dc-violet"><div class="dc-icon">🧾</div><div class="dc-val">${allBills.length}</div><div class="dc-lbl">Total Bills</div></div>
+    <div class="dash-card dc-teal"><div class="dc-icon">✅</div><div class="dc-val">${fmt(paid)}</div><div class="dc-lbl">Paid (SAR)</div></div>
+    <div class="dash-card dc-rose"><div class="dc-icon">⏳</div><div class="dc-val">${fmt(unpaid)}</div><div class="dc-lbl">Outstanding (SAR)</div></div>
+    <div class="dash-card dc-sky"><div class="dc-icon">🏦</div><div class="dc-val">${fmt(lcPaid)}</div><div class="dc-lbl">Paid by LC (SAR)</div></div>
+  `;
+
+  const tbody=document.getElementById('bd_tbody');
+  if(!tbody) return;
+  tbody.innerHTML=!allBills.length
+    ? '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">No bills found</td></tr>'
+    : allBills.map(b=>{
+        const stCls=b.status==='lc-paid'?'lcp':b.status==='paid'?'paid':'unp';
+        return `<tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--violet)">${b.no||'—'}</span></td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal)">${b.lcNo}</span></td>
+          <td>${b.vendor}</td>
+          <td>${b.proj}</td>
+          <td>${b.desc||'—'}</td>
+          <td style="font-family:'JetBrains Mono',monospace;color:var(--rose);font-weight:600">${fmt(b.amt)}</td>
+          <td>${b.signDate||'—'}</td>
+          <td>${b.payDate||'—'}</td>
+          <td><span class="ist ${stCls}">${b.status}</span></td>
+        </tr>`;
+      }).join('');
+}
+
+function initBillsDashboard(){
+  const sel=document.getElementById('bd_lc');
+  if(!sel) return;
+  const cur=sel.value;
+  const keys=Object.keys(S.lcs);
+  sel.innerHTML='<option value="all">All LCs</option>'+
+    keys.map(k=>`<option value="${k}">${k} — ${S.lcs[k].vendor||'N/A'}</option>`).join('');
+  if(cur&&sel.querySelector(`option[value="${cur}"]`)) sel.value=cur;
+  renderBillsDashboard();
 }
 
 // ═══ RESET ALL ═══════════════════════════════════════
