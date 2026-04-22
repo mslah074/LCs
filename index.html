@@ -406,6 +406,7 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       <button class="nb on" id="nb-issuance"  onclick="showView('issuance')"><span class="ni">🏦</span>New Issuance<span class="nd"></span></button>
       <button class="nb" id="nb-invoices" onclick="showView('invoices')"><span class="ni">🧾</span>Bills<span class="nd" id="d-inv"></span></button>
       <button class="nb" id="nb-fees"         onclick="showView('fees')"><span class="ni">💳</span>Additional Fees<span class="nd" id="d-fees"></span></button>
+      <button class="nb" onclick="openAmendModal()"><span class="ni">💰</span>Margin Amendment</button>
       <button class="nb" id="nb-closing"      onclick="showView('closing')"><span class="ni">🔒</span>Close LC<span class="nd" id="d-cl"></span></button>
       <button class="nb" id="nb-entries"      onclick="showView('entries')"><span class="ni">📋</span>Journal Entries<span class="nd" id="d-ent"></span></button>
       <button class="nb" id="nb-dashboard"    onclick="showView('dashboard')"><span class="ni">📊</span>Dashboard</button>
@@ -422,7 +423,6 @@ table.jet{width:100%;border-collapse:collapse;border:1.5px solid var(--border);b
       <button class="nb" onclick="openSaveModal()"><span class="ni">💾</span>Save Version<span class="nd" id="d-ver"></span></button>
       <button class="nb" onclick="openVersionsModal()"><span class="ni">🕒</span>Saved Versions</button>
       <button class="nb" onclick="openExcelModal()"><span class="ni">📥</span>Export Excel</button>
-      <button class="nb" onclick="openAmendModal()"><span class="ni">💰</span>Margin Amendment</button>
       <button class="nb" onclick="resetAll()" style="color:var(--rose)"><span class="ni" style="background:var(--rose-bg)">🗑</span>Reset All Data</button>
       <button class="dm-toggle" onclick="toggleDark()" id="dmBtn">
         <span class="ni" style="background:none;border:none">🌙</span>
